@@ -1,4 +1,13 @@
-import { AppBar, Box, InputAdornment, TextField, Toolbar, Typography } from '@mui/material'
+import {
+  AppBar,
+  Avatar,
+  Box,
+  InputAdornment,
+  Stack,
+  TextField,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 
 interface TopBarProps {
@@ -14,22 +23,24 @@ export function TopBar({ title, searchValue, onSearchChange }: TopBarProps) {
       color="transparent"
       elevation={0}
       sx={{
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        bgcolor: 'background.paper',
+        bgcolor: '#f5f7fa',
+        borderBottom: '1px solid #dde3ea',
       }}
     >
-      <Toolbar sx={{ gap: 2, justifyContent: 'space-between', flexWrap: 'wrap', py: 1.5 }}>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-          {title}
-        </Typography>
+      <Toolbar sx={{ justifyContent: 'space-between', gap: 2, px: 3, py: 1.4, minHeight: 72 }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: '#1c2330' }}>
+            {title}
+          </Typography>
+        </Box>
 
-        <Box sx={{ width: { xs: '100%', sm: 320 }, ml: 'auto' }}>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', ml: 'auto' }}>
           <TextField
-            fullWidth
             size="small"
             value={searchValue}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Поиск по названию"
+            placeholder="Поиск по медиатеке"
+            sx={{ width: 340, maxWidth: '100%' }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -40,7 +51,14 @@ export function TopBar({ title, searchValue, onSearchChange }: TopBarProps) {
               },
             }}
           />
-        </Box>
+
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', ml: 1 }}>
+            <Typography variant="caption" color="text.secondary">
+              Сортировка: по дате
+            </Typography>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: '#dfe7ff', color: '#1d4ed8', fontSize: 12 }}>А</Avatar>
+          </Stack>
+        </Stack>
       </Toolbar>
     </AppBar>
   )
