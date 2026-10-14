@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import { describe, expect, it } from 'vitest'
 
 describe('Media Storage app', () => {
   it('searches and filters media by title and type', async () => {
