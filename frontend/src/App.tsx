@@ -1,10 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
-  Button,
   Card,
   CardContent,
-  Chip,
   CssBaseline,
   IconButton,
   Stack,
@@ -19,7 +17,9 @@ import { useMediaCollections } from './features/media/useMediaCollections'
 import { useMediaLibrary } from './features/media/useMediaLibrary'
 import { useStorageSummary } from './features/media/useStorageSummary'
 import { LibraryPage } from './pages/LibraryPage'
-import type { AppView } from './types/media'
+import type { AppView, MediaItem } from './types/media'
+import { SelectedMediaPanel } from './widgets/media/SelectedMediaPanel'
+import { SelectedMediaPreview } from './widgets/media/SelectedMediaPreview'
 import { UploadFilesCard } from './widgets/media/UploadFilesCard'
 
 const theme = createTheme({
@@ -59,10 +59,23 @@ const theme = createTheme({
 function App() {
   const [activeView, setActiveView] = useState<AppView>('library')
   const [searchValue, setSearchValue] = useState('')
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   const { items: mediaItems, loading: mediaLoading } = useMediaLibrary()
   const { items: collections, loading: collectionsLoading } = useMediaCollections()
   const { summary: storageSummary } = useStorageSummary()
+
+  useEffect(() => {
+    if (!mediaItems.length) {
+      setSelectedItemId(null)
+      return
+    }
+
+    if (!selectedItemId || !mediaItems.some((item) => item.id === selectedItemId)) {
+      setSelectedItemId(mediaItems[0].id)
+    }
+  }, [mediaItems, selectedItemId])
 
   const mediaCounts = useMemo(
     () => ({
@@ -79,13 +92,22 @@ function App() {
     return mediaItems.filter((item) => item.title.toLowerCase().includes(query))
   }, [mediaItems, searchValue])
 
-  const selectedItem = filteredMedia[4] ?? mediaItems[4] ?? mediaItems[0] ?? null
+  const selectedItem = mediaItems.find((item) => item.id === selectedItemId) ?? null
+  const selectedIndex = selectedItem ? mediaItems.findIndex((item) => item.id === selectedItem.id) : -1
+
+  const handleSelectItem = (item: MediaItem) => {
+    setSelectedItemId(item.id)
+    setIsPreviewOpen(false)
+  }
+
+  const handlePrevious = selectedIndex > 0 ? () => setSelectedItemId(mediaItems[selectedIndex - 1].id) : undefined
+  const handleNext = selectedIndex >= 0 && selectedIndex < mediaItems.length - 1 ? () => setSelectedItemId(mediaItems[selectedIndex + 1].id) : undefined
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ minHeight: '100vh', bgcolor: '#edf1f5', color: '#1d2430', p: { xs: 0, md: 1 } }}>
-        <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#edf1f5', color: '#1d2430', p: { xs: 0, md: 1 }, overflow: 'hidden' }}>
+        <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh', height: '100vh' }}>
           <SidebarNavigation
             activeView={activeView}
             onViewChange={setActiveView}
@@ -94,75 +116,22 @@ function App() {
             mediaCounts={mediaCounts}
           />
 
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
             <TopBar
               title={activeView === 'collections' ? 'Коллекции' : activeView === 'upload' ? 'Добавление файлов' : 'Медиатека'}
               searchValue={searchValue}
               onSearchChange={setSearchValue}
             />
 
-            <Box sx={{ p: { xs: 2, md: 3 }, flex: 1 }}>
+            <Box sx={{ p: { xs: 2, md: 3 }, flex: 1, overflow: 'hidden' }}>
               <Stack direction={{ xs: 'column', xl: 'row' }} spacing={3} sx={{ height: '100%' }}>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <LibraryPage items={filteredMedia} loading={mediaLoading} />
+                <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  <LibraryPage items={filteredMedia} loading={mediaLoading} selectedItemId={selectedItemId} onSelectItem={handleSelectItem} />
                 </Box>
 
-                <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 } }}>
+                <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 }, flexShrink: 0, overflow: 'hidden' }}>
                   <UploadFilesCard />
-
-                  <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0' }}>
-                    <CardContent sx={{ p: 2.25 }}>
-                      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                          Выбрано
-                        </Typography>
-                        <Chip label="фото" size="small" variant="outlined" />
-                      </Stack>
-
-                      {selectedItem ? (
-                        <Box sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid #e5eaf0', mb: 2 }}>
-                          <Box component="img" src={selectedItem.previewUrl} sx={{ width: '100%', height: 170, objectFit: 'cover', display: 'block' }} />
-                        </Box>
-                      ) : null}
-
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
-                        {selectedItem ? selectedItem.title : 'Файл не выбран'}
-                      </Typography>
-
-                      <Stack spacing={0.8} sx={{ mt: 1 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', color: '#5d6d82' }}>
-                          <Typography variant="caption">Формат</Typography>
-                          <Typography variant="caption" sx={{ color: '#202a39', fontWeight: 600 }}>
-                            {selectedItem ? `${selectedItem.type.toUpperCase()} · ${selectedItem.tags.join(', ') || 'без меток'}` : '—'}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', color: '#5d6d82' }}>
-                          <Typography variant="caption">Размер</Typography>
-                          <Typography variant="caption" sx={{ color: '#202a39', fontWeight: 600 }}>
-                            {selectedItem ? `${(selectedItem.size / (1024 * 1024)).toFixed(1)} МБ` : '—'}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', color: '#5d6d82' }}>
-                          <Typography variant="caption">Добавлен</Typography>
-                          <Typography variant="caption" sx={{ color: '#202a39', fontWeight: 600 }}>
-                            {selectedItem ? selectedItem.createdAt : '—'}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', color: '#5d6d82' }}>
-                          <Typography variant="caption">Коллекция</Typography>
-                          <Typography variant="caption" sx={{ color: '#202a39', fontWeight: 600 }}>
-                            {selectedItem ? (selectedItem.tags[0] ? `#${selectedItem.tags[0]}` : 'без тега') : '—'}
-                          </Typography>
-                        </Box>
-                      </Stack>
-
-                      <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                        <Button variant="contained" fullWidth sx={{ py: 1 }}>
-                          Копировать ссылку
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
+                  <SelectedMediaPanel item={selectedItem} onOpenPreview={() => setIsPreviewOpen(true)} />
 
                   <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0' }}>
                     <CardContent sx={{ p: 2.25 }}>
@@ -195,6 +164,14 @@ function App() {
           </Box>
         </Stack>
       </Box>
+
+      <SelectedMediaPreview
+        item={selectedItem}
+        open={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
     </ThemeProvider>
   )
 }

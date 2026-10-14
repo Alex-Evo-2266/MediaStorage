@@ -17,11 +17,13 @@ import { formatFileSize } from '../utils/media'
 interface LibraryPageProps {
   items: MediaItem[]
   loading?: boolean
+  selectedItemId?: string | null
+  onSelectItem?: (item: MediaItem) => void
 }
 
 const filterOptions = ['Все файлы', 'Недавно добавленные', 'Избранное', 'Фото', 'Видео', 'Аудио']
 
-export function LibraryPage({ items, loading = false }: LibraryPageProps) {
+export function LibraryPage({ items, loading = false, selectedItemId, onSelectItem }: LibraryPageProps) {
   if (loading) {
     return (
       <Box sx={{ p: 3, borderRadius: 3, bgcolor: '#f7f9fc', border: '1px solid #e5eaf0' }}>
@@ -72,34 +74,51 @@ export function LibraryPage({ items, loading = false }: LibraryPageProps) {
         </Stack>
 
         <Grid container spacing={2}>
-          {items.slice(0, 4).map((item) => (
-            <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <Card sx={{ borderRadius: 3, overflow: 'hidden', bgcolor: '#f7f9fc', border: '1px solid #e5eaf0' }}>
-                <Box sx={{ position: 'relative' }}>
-                  <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
-                  <IconButton
-                    size="small"
-                    sx={{ position: 'absolute', right: 10, top: 10, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 999 }}
-                  >
-                    <FavoriteBorder fontSize="small" />
-                  </IconButton>
-                </Box>
-                <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
-                  <Stack spacing={1}>
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1d2330' }}>
-                        {item.title}
+          {items.slice(0, 4).map((item) => {
+            const isSelected = item.id === selectedItemId
+
+            return (
+              <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Card
+                  onClick={() => onSelectItem?.(item)}
+                  sx={{
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    bgcolor: '#f7f9fc',
+                    border: isSelected ? '2px solid #2d5ef5' : '1px solid #e5eaf0',
+                    boxShadow: isSelected ? '0 0 0 3px rgba(45, 94, 245, 0.12)' : 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    '&:hover': { borderColor: '#b7c9ff' },
+                  }}
+                >
+                  <Box sx={{ position: 'relative' }}>
+                    <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
+                    <IconButton
+                      size="small"
+                      sx={{ position: 'absolute', right: 10, top: 10, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 999 }}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <FavoriteBorder fontSize="small" />
+                    </IconButton>
+                  </Box>
+                  <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
+                    <Stack spacing={1}>
+                      <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1d2330' }}>
+                          {item.title}
+                        </Typography>
+                        <Chip label={item.type} size="small" variant="outlined" sx={{ height: 22, fontSize: 10 }} />
+                      </Stack>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.type === 'video' ? `${item.duration ?? '00:30'} · ${formatFileSize(item.size)}` : formatFileSize(item.size)}
                       </Typography>
-                      <Chip label={item.type} size="small" variant="outlined" sx={{ height: 22, fontSize: 10 }} />
                     </Stack>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.type === 'video' ? `${item.duration ?? '00:30'} · ${formatFileSize(item.size)}` : formatFileSize(item.size)}
-                    </Typography>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                  </CardContent>
+                </Card>
+              </Grid>
+            )
+          })}
         </Grid>
       </Box>
 
@@ -114,31 +133,47 @@ export function LibraryPage({ items, loading = false }: LibraryPageProps) {
         </Stack>
 
         <Grid container spacing={2}>
-          {items.slice(4, 6).map((item) => (
-            <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <Card sx={{ borderRadius: 3, overflow: 'hidden', bgcolor: '#f7f9fc', border: '1px solid #e5eaf0' }}>
-                <Box sx={{ position: 'relative' }}>
-                  <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
-                  <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,0.12)' }}>
-                    <PlayArrow sx={{ fontSize: 38, color: '#fff' }} />
+          {items.slice(4, 6).map((item) => {
+            const isSelected = item.id === selectedItemId
+
+            return (
+              <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Card
+                  onClick={() => onSelectItem?.(item)}
+                  sx={{
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    bgcolor: '#f7f9fc',
+                    border: isSelected ? '2px solid #2d5ef5' : '1px solid #e5eaf0',
+                    boxShadow: isSelected ? '0 0 0 3px rgba(45, 94, 245, 0.12)' : 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    '&:hover': { borderColor: '#b7c9ff' },
+                  }}
+                >
+                  <Box sx={{ position: 'relative' }}>
+                    <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
+                    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,0.12)' }}>
+                      <PlayArrow sx={{ fontSize: 38, color: '#fff' }} />
+                    </Box>
                   </Box>
-                </Box>
-                <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
-                  <Stack spacing={1}>
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1d2330' }}>
-                        {item.title}
+                  <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
+                    <Stack spacing={1}>
+                      <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1d2330' }}>
+                          {item.title}
+                        </Typography>
+                        <Chip label={item.type} size="small" variant="outlined" sx={{ height: 22, fontSize: 10 }} />
+                      </Stack>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.duration ?? '00:45'} · {formatFileSize(item.size)}
                       </Typography>
-                      <Chip label={item.type} size="small" variant="outlined" sx={{ height: 22, fontSize: 10 }} />
                     </Stack>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.duration ?? '00:45'} · {formatFileSize(item.size)}
-                    </Typography>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                  </CardContent>
+                </Card>
+              </Grid>
+            )
+          })}
         </Grid>
       </Box>
 
