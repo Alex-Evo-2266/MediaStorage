@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { mediaApi } from '../../entities/media/api/mediaApi'
 import type { MediaCollection } from '../../types/media'
 
@@ -36,9 +36,59 @@ export function useMediaCollections() {
     }
   }, [])
 
+  const createCollection = useCallback(async (name: string, description = ''): Promise<MediaCollection | null> => {
+    try {
+      const nextCollection = await mediaApi.createCollection({ name, description })
+      setItems((current) => [...current, nextCollection])
+      return nextCollection
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось создать коллекцию')
+      return null
+    }
+  }, [])
+
+  const addMediaToCollection = useCallback(async (collectionId: string, mediaId: string): Promise<MediaCollection | null> => {
+    try {
+      const nextCollection = await mediaApi.addMediaToCollection(collectionId, mediaId)
+      setItems((current) =>
+        current.map((collection) => (collection.id === collectionId ? nextCollection : collection)),
+      )
+      return nextCollection
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось добавить файл в коллекцию')
+      return null
+    }
+  }, [])
+
+  const removeMediaFromCollection = useCallback(async (collectionId: string, mediaId: string): Promise<MediaCollection | null> => {
+    try {
+      const nextCollection = await mediaApi.removeMediaFromCollection(collectionId, mediaId)
+      setItems((current) =>
+        current.map((collection) => (collection.id === collectionId ? nextCollection : collection)),
+      )
+      return nextCollection
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось удалить файл из коллекции')
+      return null
+    }
+  }, [])
+
+  const deleteCollection = useCallback(async (collectionId: string): Promise<void> => {
+    try {
+      await mediaApi.deleteCollection(collectionId)
+      setItems((current) => current.filter((collection) => collection.id !== collectionId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось удалить коллекцию')
+    }
+  }, [])
+
   return {
     items,
     loading,
     error,
+    createCollection,
+    addMediaToCollection,
+    removeMediaFromCollection,
+    deleteCollection,
   }
 }

@@ -70,7 +70,13 @@ function App() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   const { items: mediaItems, loading: mediaLoading } = useMediaLibrary()
-  const { items: collections } = useMediaCollections()
+  const {
+    items: collections,
+    createCollection,
+    addMediaToCollection,
+    removeMediaFromCollection,
+    deleteCollection,
+  } = useMediaCollections()
   const { summary: storageSummary } = useStorageSummary()
   const { query: searchValue, setQuery: setSearchValue, filter, setFilter, filteredItems } = useLibraryFilters(mediaItems)
 
@@ -238,7 +244,19 @@ function App() {
                     />
                   }
                 />
-                <Route path="/collections" element={<CollectionsPage collections={collections} />} />
+                <Route
+                  path="/collections"
+                  element={
+                    <CollectionsPage
+                      collections={collections}
+                      mediaItems={mediaItems}
+                      onCreateCollection={createCollection}
+                      onAddMediaToCollection={addMediaToCollection}
+                      onRemoveMediaFromCollection={removeMediaFromCollection}
+                      onDeleteCollection={deleteCollection}
+                    />
+                  }
+                />
                 <Route path="/upload" element={<UploadPage />} />
               </Routes>
             </Box>
