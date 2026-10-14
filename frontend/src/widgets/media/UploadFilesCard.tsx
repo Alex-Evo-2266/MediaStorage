@@ -170,7 +170,7 @@ export function UploadFilesCard() {
           />
         </Button>
 
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" sx={{ color: '#4d5d73' }}>
           Перетащите файлы в окно или выберите вручную.
         </Typography>
 
@@ -189,7 +189,7 @@ export function UploadFilesCard() {
         <Stack spacing={1.5} sx={{ mt: 2.5 }}>
           {items.length === 0 ? (
             <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#eef3ff', border: '1px dashed #c9d9fb' }}>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ color: '#4d5d73' }}>
                 Нет файлов для загрузки.
               </Typography>
             </Box>
@@ -205,7 +205,7 @@ export function UploadFilesCard() {
                       <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.name}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" sx={{ color: '#4e5f77' }}>
                         {formatUploadSize(item.size)} · {item.type}
                       </Typography>
                     </Box>

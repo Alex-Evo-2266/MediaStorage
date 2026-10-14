@@ -116,20 +116,20 @@ function App() {
             mediaCounts={mediaCounts}
           />
 
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
             <TopBar
               title={activeView === 'collections' ? 'Коллекции' : activeView === 'upload' ? 'Добавление файлов' : 'Медиатека'}
               searchValue={searchValue}
               onSearchChange={setSearchValue}
             />
 
-            <Box sx={{ p: { xs: 2, md: 3 }, flex: 1, overflow: 'hidden' }}>
-              <Stack direction={{ xs: 'column', xl: 'row' }} spacing={3} sx={{ height: '100%' }}>
-                <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+            <Box sx={{ p: { xs: 2, md: 3 }, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+              <Stack direction={{ xs: 'column', xl: 'row' }} spacing={3} sx={{ minHeight: '100%', alignItems: 'flex-start' }}>
+                <Box sx={{ flex: 1, minWidth: 0, minHeight: 0 }}>
                   <LibraryPage items={filteredMedia} loading={mediaLoading} selectedItemId={selectedItemId} onSelectItem={handleSelectItem} />
                 </Box>
 
-                <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 }, flexShrink: 0, overflow: 'hidden' }}>
+                <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 }, flexShrink: 0, minHeight: 0 }}>
                   <UploadFilesCard />
                   <SelectedMediaPanel item={selectedItem} onOpenPreview={() => setIsPreviewOpen(true)} />
 

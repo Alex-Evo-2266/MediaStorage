@@ -53,7 +53,7 @@ export function TopBar({ title, searchValue, onSearchChange }: TopBarProps) {
           />
 
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center', ml: 1 }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" sx={{ color: '#4c5d74' }}>
               Сортировка: по дате
             </Typography>
             <Avatar sx={{ width: 32, height: 32, bgcolor: '#dfe7ff', color: '#1d4ed8', fontSize: 12 }}>А</Avatar>

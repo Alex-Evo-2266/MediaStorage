@@ -53,11 +53,14 @@ export function SidebarNavigation({
     <Stack
       sx={{
         width: { xs: '100%', sm: 250 },
-        minHeight: '100vh',
+        height: '100vh',
         bgcolor: '#eef1f5',
         borderRight: '1px solid #dde3ea',
         px: 1.5,
         py: 1.25,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        flexShrink: 0,
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1, py: 1.25, mb: 1 }}>
@@ -77,7 +80,7 @@ export function SidebarNavigation({
           <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
             Media Storage
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" sx={{ color: '#53657a' }}>
             домашний сервер
           </Typography>
         </Box>
@@ -108,11 +111,11 @@ export function SidebarNavigation({
               secondary={count}
               sx={{
                 my: 0,
-                '& .MuiListItemText-primary': { fontSize: 15, fontWeight: 500 },
-                '& .MuiListItemText-secondary': { fontSize: 11, color: '#66788c' },
+                '& .MuiListItemText-primary': { fontSize: 15, fontWeight: 500, color: '#1d2430' },
+                '& .MuiListItemText-secondary': { fontSize: 11, color: '#52627a' },
               }}
             />
-            {count !== '0' && <Typography variant="caption" color="text.secondary">{count}</Typography>}
+            {count !== '0' && <Typography variant="caption" sx={{ color: '#475c74' }}>{count}</Typography>}
           </ListItemButton>
         ))}
       </List>
@@ -125,12 +128,18 @@ export function SidebarNavigation({
 
       <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', px: 1.2, gap: 1 }}>
         {['#Семья', '#Отпуск 2026', '#Раво', '#RAW'].map((tag) => (
-          <Chip key={tag} label={tag} size="small" variant="outlined" sx={{ borderRadius: 999, bgcolor: '#f7f8fb' }} />
+          <Chip
+            key={tag}
+            label={tag}
+            size="small"
+            variant="outlined"
+            sx={{ borderRadius: 999, bgcolor: '#f7f8fb', color: '#445367', borderColor: '#cfd7e5' }}
+          />
         ))}
       </Stack>
 
       <Box sx={{ mt: 2, p: 1.5, borderRadius: 3, bgcolor: '#f5f7fa', border: '1px solid #dde3ea' }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" sx={{ color: '#4a5d75' }}>
           {storageSummary ? `Использовано ${storageSummary.usedGb} ГБ из ${storageSummary.totalGb} ГБ` : 'Загрузка данных...'}
         </Typography>
         <Box sx={{ mt: 1.5, height: 8, borderRadius: 999, bgcolor: '#dfe6ef', overflow: 'hidden' }}>
@@ -143,7 +152,7 @@ export function SidebarNavigation({
             }}
           />
         </Box>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+        <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#4a5d75' }}>
           {storageSummary ? `Осталось ${storageSummary.freeGb} ГБ` : 'Подсчёт свободного места...'}
         </Typography>
         <Button variant="contained" fullWidth sx={{ mt: 1.5, borderRadius: 2, textTransform: 'none' }}>
