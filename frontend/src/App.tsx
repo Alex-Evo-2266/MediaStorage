@@ -125,13 +125,30 @@ function App() {
     return 'Медиатека'
   }, [activeView])
 
-  const selectedItem = mediaItems.find((item) => item.id === selectedItemId) ?? null
-  const selectedIndex = selectedItem ? mediaItems.findIndex((item) => item.id === selectedItem.id) : -1
-  const isMediaSectionPage = activeView === 'images' || activeView === 'videos' || activeView === 'audio'
+  const previewItems = useMemo(() => {
+    if (activeView === 'images') return filteredMedia.filter((item) => item.type === 'image')
+    if (activeView === 'videos') return filteredMedia.filter((item) => item.type === 'video')
+    if (activeView === 'audio') return filteredMedia.filter((item) => item.type === 'audio')
+    return filteredMedia
+  }, [activeView, filteredMedia])
+
+  useEffect(() => {
+    if (!previewItems.length) {
+      setSelectedItemId(null)
+      return
+    }
+
+    if (!selectedItemId || !previewItems.some((item) => item.id === selectedItemId)) {
+      setSelectedItemId(previewItems[0].id)
+    }
+  }, [previewItems, selectedItemId])
+
+  const selectedItem = previewItems.find((item) => item.id === selectedItemId) ?? mediaItems.find((item) => item.id === selectedItemId) ?? null
+  const selectedIndex = selectedItem ? previewItems.findIndex((item) => item.id === selectedItem.id) : -1
 
   const handleSelectItem = (item: MediaItem) => {
     setSelectedItemId(item.id)
-    setIsPreviewOpen(isMediaSectionPage)
+    setIsPreviewOpen(true)
   }
 
   const handleViewChange = (view: AppView) => {
@@ -139,10 +156,10 @@ function App() {
   }
 
   const handlePrevious =
-    selectedIndex > 0 ? () => setSelectedItemId(mediaItems[selectedIndex - 1].id) : undefined
+    selectedIndex > 0 ? () => setSelectedItemId(previewItems[selectedIndex - 1].id) : undefined
   const handleNext =
-    selectedIndex >= 0 && selectedIndex < mediaItems.length - 1
-      ? () => setSelectedItemId(mediaItems[selectedIndex + 1].id)
+    selectedIndex >= 0 && selectedIndex < previewItems.length - 1
+      ? () => setSelectedItemId(previewItems[selectedIndex + 1].id)
       : undefined
 
   return (

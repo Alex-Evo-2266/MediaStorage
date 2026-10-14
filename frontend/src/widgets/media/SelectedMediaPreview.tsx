@@ -1,6 +1,8 @@
 import { Close, NavigateBefore, NavigateNext, OpenInFull } from '@mui/icons-material'
 import { Backdrop, Box, Card, CardContent, IconButton, Stack, Typography } from '@mui/material'
+import { useEffect } from 'react'
 import type { MediaItem } from '../../types/media'
+import { formatFileSize } from '../../utils/media'
 
 interface SelectedMediaPreviewProps {
   item: MediaItem | null
@@ -11,9 +13,26 @@ interface SelectedMediaPreviewProps {
 }
 
 export function SelectedMediaPreview({ item, open, onClose, onNext, onPrevious }: SelectedMediaPreviewProps) {
+  useEffect(() => {
+    if (!open) {
+      return undefined
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, open])
+
   if (!item || !open) {
     return null
   }
+
+  const typeLabel = item.type === 'image' ? 'Фото' : item.type === 'video' ? 'Видео' : 'Аудио'
 
   return (
     <Backdrop
@@ -76,8 +95,8 @@ export function SelectedMediaPreview({ item, open, onClose, onNext, onPrevious }
                 Метаданные
               </Typography>
               <Stack spacing={1.2}>
-                <Typography variant="body2" sx={{ color: '#4d5d73' }}>Тип: {item.type}</Typography>
-                <Typography variant="body2" sx={{ color: '#4d5d73' }}>Размер: {item.size}</Typography>
+                <Typography variant="body2" sx={{ color: '#4d5d73' }}>Тип: {typeLabel}</Typography>
+                <Typography variant="body2" sx={{ color: '#4d5d73' }}>Размер: {formatFileSize(item.size)}</Typography>
                 <Typography variant="body2" sx={{ color: '#4d5d73' }}>Дата: {item.createdAt}</Typography>
                 <Typography variant="body2" sx={{ color: '#4d5d73' }}>Теги: {item.tags.join(', ') || '—'}</Typography>
               </Stack>
