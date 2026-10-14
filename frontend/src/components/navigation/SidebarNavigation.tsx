@@ -43,9 +43,9 @@ export function SidebarNavigation({
 }: SidebarNavigationProps) {
   const items: Array<{ label: string; count: string; view: AppView; icon: typeof Image }> = [
     { label: 'Обзор', count: '0', view: 'library', icon: PhotoCamera },
-    { label: 'Изображения', count: mediaCounts.image.toLocaleString('ru-RU'), view: 'library', icon: Image },
-    { label: 'Музыка', count: mediaCounts.audio.toLocaleString('ru-RU'), view: 'library', icon: MusicNote },
-    { label: 'Видео', count: mediaCounts.video.toLocaleString('ru-RU'), view: 'library', icon: SmartDisplay },
+    { label: 'Изображения', count: mediaCounts.image.toLocaleString('ru-RU'), view: 'images', icon: Image },
+    { label: 'Музыка', count: mediaCounts.audio.toLocaleString('ru-RU'), view: 'audio', icon: MusicNote },
+    { label: 'Видео', count: mediaCounts.video.toLocaleString('ru-RU'), view: 'videos', icon: SmartDisplay },
     { label: 'Коллекции', count: totalCollections.toLocaleString('ru-RU'), view: 'collections', icon: Collections },
     { label: 'Настройки', count: '0', view: 'upload', icon: Settings },
   ]
@@ -90,7 +90,7 @@ export function SidebarNavigation({
         {items.map(({ label, count, view, icon: Icon }) => (
           <ListItemButton
             key={`${label}-${view}`}
-            selected={activeView === view && label === 'Коллекции'}
+            selected={activeView === view}
             onClick={() => onViewChange(view)}
             sx={{
               borderRadius: 2,

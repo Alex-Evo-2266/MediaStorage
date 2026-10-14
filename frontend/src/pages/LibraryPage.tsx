@@ -11,11 +11,15 @@ import {
   Typography,
 } from '@mui/material'
 import { FavoriteBorder, PlayArrow, OpenInNew } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
 import type { MediaItem } from '../types/media'
 import { formatFileSize } from '../utils/media'
 
+type LibraryView = 'all' | 'image' | 'video' | 'audio'
+
 interface LibraryPageProps {
   items: MediaItem[]
+  view?: LibraryView
   loading?: boolean
   selectedItemId?: string | null
   onSelectItem?: (item: MediaItem) => void
@@ -23,7 +27,16 @@ interface LibraryPageProps {
 
 const filterOptions = ['Все файлы', 'Недавно добавленные', 'Избранное', 'Фото', 'Видео', 'Аудио']
 
-export function LibraryPage({ items, loading = false, selectedItemId, onSelectItem }: LibraryPageProps) {
+export function LibraryPage({ items, view = 'all', loading = false, selectedItemId, onSelectItem }: LibraryPageProps) {
+  const navigate = useNavigate()
+
+  const titleByView: Record<LibraryView, string> = {
+    all: 'Медиатека',
+    image: 'Фото',
+    video: 'Видео',
+    audio: 'Музыка',
+  }
+
   if (loading) {
     return (
       <Box sx={{ p: 3, borderRadius: 3, bgcolor: '#f7f9fc', border: '1px solid #e5eaf0' }}>
@@ -32,14 +45,16 @@ export function LibraryPage({ items, loading = false, selectedItemId, onSelectIt
     )
   }
 
+  const currentTitle = titleByView[view]
+
   return (
     <Stack spacing={2.5}>
       <Box>
         <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#171d2a' }}>
-          Медиатека
+          {currentTitle}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          10 354 файла · обновлено сегодня в 09:42
+          {items.length} файлов · обновлено сегодня в 09:42
         </Typography>
       </Box>
 
@@ -66,15 +81,19 @@ export function LibraryPage({ items, loading = false, selectedItemId, onSelectIt
       <Box>
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1f2735' }}>
-            Изображения · 1240 файлов
+            Изображения · {items.filter((item) => item.type === 'image').length} файлов
           </Typography>
-          <Button size="small" sx={{ color: '#53657a', textTransform: 'none' }}>
+          <Button
+            size="small"
+            sx={{ color: '#53657a', textTransform: 'none' }}
+            onClick={() => navigate('/images')}
+          >
             Открыть раздел
           </Button>
         </Stack>
 
         <Grid container spacing={2}>
-          {items.slice(0, 4).map((item) => {
+          {(view === 'image' ? items : items.filter((item) => item.type === 'image')).slice(0, 4).map((item) => {
             const isSelected = item.id === selectedItemId
 
             return (
@@ -125,15 +144,19 @@ export function LibraryPage({ items, loading = false, selectedItemId, onSelectIt
       <Box>
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1f2735' }}>
-            Видео · 860 файлов
+            Видео · {items.filter((item) => item.type === 'video').length} файлов
           </Typography>
-          <Button size="small" sx={{ color: '#53657a', textTransform: 'none' }}>
+          <Button
+            size="small"
+            sx={{ color: '#53657a', textTransform: 'none' }}
+            onClick={() => navigate('/videos')}
+          >
             Открыть раздел
           </Button>
         </Stack>
 
         <Grid container spacing={2}>
-          {items.slice(4, 6).map((item) => {
+          {(view === 'video' ? items : items.filter((item) => item.type === 'video')).slice(0, 4).map((item) => {
             const isSelected = item.id === selectedItemId
 
             return (
@@ -178,9 +201,18 @@ export function LibraryPage({ items, loading = false, selectedItemId, onSelectIt
       </Box>
 
       <Box sx={{ mt: 1 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, color: '#1f2735' }}>
-          Аудио · 3 214 треков
-        </Typography>
+        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1f2735' }}>
+            Аудио · {items.filter((item) => item.type === 'audio').length} треков
+          </Typography>
+          <Button
+            size="small"
+            sx={{ color: '#53657a', textTransform: 'none' }}
+            onClick={() => navigate('/audio')}
+          >
+            Открыть раздел
+          </Button>
+        </Stack>
 
         <Box sx={{ bgcolor: '#f7f9fc', border: '1px solid #e5eaf0', borderRadius: 3, overflow: 'hidden' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.5, borderBottom: '1px solid #e5eaf0' }}>
@@ -192,18 +224,18 @@ export function LibraryPage({ items, loading = false, selectedItemId, onSelectIt
             <Box />
           </Box>
 
-          {['Мелодия рассвета', 'Выше домом', 'Ариадна'].map((track, index) => (
-            <Box key={track} sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.3, alignItems: 'center', borderBottom: index === 2 ? 'none' : '1px solid #e5eaf0' }}>
+          {(view === 'audio' ? items : items.filter((item) => item.type === 'audio')).slice(0, 3).map((track, index) => (
+            <Box key={track.id} sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.3, alignItems: 'center', borderBottom: index === 2 ? 'none' : '1px solid #e5eaf0' }}>
               <Typography variant="body2" color="text.secondary">{String(index + 1).padStart(2, '0')}</Typography>
               <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                 <Box sx={{ width: 26, height: 26, borderRadius: 1, bgcolor: '#dde7ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <PlayArrow sx={{ fontSize: 14, color: '#1d4ed8' }} />
                 </Box>
-                <Typography variant="body2">{track}</Typography>
+                <Typography variant="body2">{track.title}</Typography>
               </Stack>
               <Typography variant="body2" color="text.secondary">{index === 0 ? 'Mujice' : index === 1 ? 'Сироткин' : 'Kedr Livanskiy'}</Typography>
               <Typography variant="body2" color="text.secondary">{index === 0 ? 'FLAC - 32 Бит' : 'MP3 - 9.4 МБ'}</Typography>
-              <Typography variant="body2" color="text.secondary">{index === 0 ? '3.4 ГБ' : index === 1 ? '31 МБ' : '2.1 МБ'}</Typography>
+              <Typography variant="body2" color="text.secondary">{formatFileSize(track.size)}</Typography>
               <IconButton size="small" sx={{ color: '#58687d' }}><OpenInNew fontSize="small" /></IconButton>
             </Box>
           ))}

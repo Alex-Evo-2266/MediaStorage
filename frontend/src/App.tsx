@@ -11,12 +11,15 @@ import {
   createTheme,
 } from '@mui/material'
 import { FolderOutlined, MoreHoriz } from '@mui/icons-material'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { SidebarNavigation } from './components/navigation/SidebarNavigation'
 import { TopBar } from './components/navigation/TopBar'
 import { useMediaCollections } from './features/media/useMediaCollections'
 import { useMediaLibrary } from './features/media/useMediaLibrary'
 import { useStorageSummary } from './features/media/useStorageSummary'
+import { CollectionsPage } from './pages/CollectionsPage'
 import { LibraryPage } from './pages/LibraryPage'
+import { UploadPage } from './pages/UploadPage'
 import type { AppView, MediaItem } from './types/media'
 import { SelectedMediaPanel } from './widgets/media/SelectedMediaPanel'
 import { SelectedMediaPreview } from './widgets/media/SelectedMediaPreview'
@@ -56,8 +59,18 @@ const theme = createTheme({
   },
 })
 
+const viewToPath: Record<AppView, string> = {
+  library: '/library',
+  images: '/images',
+  videos: '/videos',
+  audio: '/audio',
+  collections: '/collections',
+  upload: '/upload',
+}
+
 function App() {
-  const [activeView, setActiveView] = useState<AppView>('library')
+  const navigate = useNavigate()
+  const location = useLocation()
   const [searchValue, setSearchValue] = useState('')
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -77,6 +90,26 @@ function App() {
     }
   }, [mediaItems, selectedItemId])
 
+  const activeView = useMemo<AppView>(() => {
+    switch (location.pathname) {
+      case '/':
+      case '/library':
+        return 'library'
+      case '/images':
+        return 'images'
+      case '/videos':
+        return 'videos'
+      case '/audio':
+        return 'audio'
+      case '/collections':
+        return 'collections'
+      case '/upload':
+        return 'upload'
+      default:
+        return 'library'
+    }
+  }, [location.pathname])
+
   const mediaCounts = useMemo(
     () => ({
       image: mediaItems.filter((item) => item.type === 'image').length,
@@ -92,6 +125,15 @@ function App() {
     return mediaItems.filter((item) => item.title.toLowerCase().includes(query))
   }, [mediaItems, searchValue])
 
+  const title = useMemo(() => {
+    if (activeView === 'images') return 'Фото'
+    if (activeView === 'videos') return 'Видео'
+    if (activeView === 'audio') return 'Музыка'
+    if (activeView === 'collections') return 'Коллекции'
+    if (activeView === 'upload') return 'Добавление файлов'
+    return 'Медиатека'
+  }, [activeView])
+
   const selectedItem = mediaItems.find((item) => item.id === selectedItemId) ?? null
   const selectedIndex = selectedItem ? mediaItems.findIndex((item) => item.id === selectedItem.id) : -1
 
@@ -100,8 +142,16 @@ function App() {
     setIsPreviewOpen(false)
   }
 
-  const handlePrevious = selectedIndex > 0 ? () => setSelectedItemId(mediaItems[selectedIndex - 1].id) : undefined
-  const handleNext = selectedIndex >= 0 && selectedIndex < mediaItems.length - 1 ? () => setSelectedItemId(mediaItems[selectedIndex + 1].id) : undefined
+  const handleViewChange = (view: AppView) => {
+    navigate(viewToPath[view])
+  }
+
+  const handlePrevious =
+    selectedIndex > 0 ? () => setSelectedItemId(mediaItems[selectedIndex - 1].id) : undefined
+  const handleNext =
+    selectedIndex >= 0 && selectedIndex < mediaItems.length - 1
+      ? () => setSelectedItemId(mediaItems[selectedIndex + 1].id)
+      : undefined
 
   return (
     <ThemeProvider theme={theme}>
@@ -110,23 +160,70 @@ function App() {
         <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh', height: '100vh' }}>
           <SidebarNavigation
             activeView={activeView}
-            onViewChange={setActiveView}
+            onViewChange={handleViewChange}
             storageSummary={storageSummary}
             totalCollections={collections.length}
             mediaCounts={mediaCounts}
           />
 
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
-            <TopBar
-              title={activeView === 'collections' ? 'Коллекции' : activeView === 'upload' ? 'Добавление файлов' : 'Медиатека'}
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-            />
+            <TopBar title={title} searchValue={searchValue} onSearchChange={setSearchValue} />
 
             <Box sx={{ p: { xs: 2, md: 3 }, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
               <Stack direction={{ xs: 'column', xl: 'row' }} spacing={3} sx={{ minHeight: '100%', alignItems: 'flex-start' }}>
                 <Box sx={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-                  <LibraryPage items={filteredMedia} loading={mediaLoading} selectedItemId={selectedItemId} onSelectItem={handleSelectItem} />
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/library" replace />} />
+                    <Route
+                      path="/library"
+                      element={
+                        <LibraryPage
+                          items={filteredMedia}
+                          loading={mediaLoading}
+                          selectedItemId={selectedItemId}
+                          onSelectItem={handleSelectItem}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/images"
+                      element={
+                        <LibraryPage
+                          items={filteredMedia.filter((item) => item.type === 'image')}
+                          view="image"
+                          loading={mediaLoading}
+                          selectedItemId={selectedItemId}
+                          onSelectItem={handleSelectItem}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/videos"
+                      element={
+                        <LibraryPage
+                          items={filteredMedia.filter((item) => item.type === 'video')}
+                          view="video"
+                          loading={mediaLoading}
+                          selectedItemId={selectedItemId}
+                          onSelectItem={handleSelectItem}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/audio"
+                      element={
+                        <LibraryPage
+                          items={filteredMedia.filter((item) => item.type === 'audio')}
+                          view="audio"
+                          loading={mediaLoading}
+                          selectedItemId={selectedItemId}
+                          onSelectItem={handleSelectItem}
+                        />
+                      }
+                    />
+                    <Route path="/collections" element={<CollectionsPage collections={collections} />} />
+                    <Route path="/upload" element={<UploadPage />} />
+                  </Routes>
                 </Box>
 
                 <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 }, flexShrink: 0, minHeight: 0 }}>
@@ -139,21 +236,47 @@ function App() {
                         <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                           Коллекции
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">Все 24</Typography>
+                        <Typography variant="caption" color="text.secondary">Все {collections.length}</Typography>
                       </Stack>
 
                       {!collectionsLoading && collections.map((collection) => (
-                        <Box key={collection.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 2, bgcolor: '#f2f5f8', px: 1.2, py: 1.2, mb: 1 }}>
+                        <Box
+                          key={collection.id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderRadius: 2,
+                            bgcolor: '#f2f5f8',
+                            px: 1.2,
+                            py: 1.2,
+                            mb: 1,
+                          }}
+                        >
                           <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center' }}>
-                            <Box sx={{ width: 28, height: 28, borderRadius: 1.4, bgcolor: '#dfeaff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Box
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: 1.4,
+                                bgcolor: '#dfeaff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
                               <FolderOutlined sx={{ fontSize: 16, color: '#2b5ae7' }} />
                             </Box>
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>{collection.name}</Typography>
-                              <Typography variant="caption" color="text.secondary">{collection.mediaIds.length} файлов</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {collection.mediaIds.length} файлов
+                              </Typography>
                             </Box>
                           </Stack>
-                          <IconButton size="small"><MoreHoriz fontSize="small" /></IconButton>
+                          <IconButton size="small">
+                            <MoreHoriz fontSize="small" />
+                          </IconButton>
                         </Box>
                       ))}
                     </CardContent>

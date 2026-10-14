@@ -25,4 +25,4 @@ export interface StorageSummary {
   percentage: number
 }
 
-export type AppView = 'library' | 'collections' | 'upload'
+export type AppView = 'library' | 'images' | 'videos' | 'audio' | 'collections' | 'upload'
