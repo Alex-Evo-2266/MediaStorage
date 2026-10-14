@@ -20,23 +20,35 @@ import {
   Settings,
   SmartDisplay,
 } from '@mui/icons-material'
-import type { AppView } from '../../types/media'
+import type { AppView, StorageSummary } from '../../types/media'
 
 interface SidebarNavigationProps {
   activeView: AppView
   onViewChange: (view: AppView) => void
+  storageSummary: StorageSummary | null
+  totalCollections: number
+  mediaCounts: {
+    image: number
+    video: number
+    audio: number
+  }
 }
 
-const items: Array<{ label: string; count: string; view: AppView; icon: typeof Image }> = [
-  { label: 'Обзор', count: '0', view: 'library', icon: PhotoCamera },
-  { label: 'Изображения', count: '12 480', view: 'library', icon: Image },
-  { label: 'Музыка', count: '3 214', view: 'library', icon: MusicNote },
-  { label: 'Видео', count: '860', view: 'library', icon: SmartDisplay },
-  { label: 'Коллекции', count: '24', view: 'collections', icon: Collections },
-  { label: 'Настройки', count: '0', view: 'upload', icon: Settings },
-]
-
-export function SidebarNavigation({ activeView, onViewChange }: SidebarNavigationProps) {
+export function SidebarNavigation({
+  activeView,
+  onViewChange,
+  storageSummary,
+  totalCollections,
+  mediaCounts,
+}: SidebarNavigationProps) {
+  const items: Array<{ label: string; count: string; view: AppView; icon: typeof Image }> = [
+    { label: 'Обзор', count: '0', view: 'library', icon: PhotoCamera },
+    { label: 'Изображения', count: mediaCounts.image.toLocaleString('ru-RU'), view: 'library', icon: Image },
+    { label: 'Музыка', count: mediaCounts.audio.toLocaleString('ru-RU'), view: 'library', icon: MusicNote },
+    { label: 'Видео', count: mediaCounts.video.toLocaleString('ru-RU'), view: 'library', icon: SmartDisplay },
+    { label: 'Коллекции', count: totalCollections.toLocaleString('ru-RU'), view: 'collections', icon: Collections },
+    { label: 'Настройки', count: '0', view: 'upload', icon: Settings },
+  ]
   return (
     <Stack
       sx={{
@@ -119,13 +131,20 @@ export function SidebarNavigation({ activeView, onViewChange }: SidebarNavigatio
 
       <Box sx={{ mt: 2, p: 1.5, borderRadius: 3, bgcolor: '#f5f7fa', border: '1px solid #dde3ea' }}>
         <Typography variant="caption" color="text.secondary">
-          Использовано 320 ГБ из 1 ТБ
+          {storageSummary ? `Использовано ${storageSummary.usedGb} ГБ из ${storageSummary.totalGb} ГБ` : 'Загрузка данных...'}
         </Typography>
         <Box sx={{ mt: 1.5, height: 8, borderRadius: 999, bgcolor: '#dfe6ef', overflow: 'hidden' }}>
-          <Box sx={{ width: '31%', height: '100%', bgcolor: '#5c7ef6', borderRadius: 999 }} />
+          <Box
+            sx={{
+              width: storageSummary ? `${storageSummary.percentage}%` : '0%',
+              height: '100%',
+              bgcolor: '#5c7ef6',
+              borderRadius: 999,
+            }}
+          />
         </Box>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-          Осталось 704 ГБ
+          {storageSummary ? `Осталось ${storageSummary.freeGb} ГБ` : 'Подсчёт свободного места...'}
         </Typography>
         <Button variant="contained" fullWidth sx={{ mt: 1.5, borderRadius: 2, textTransform: 'none' }}>
           Увеличить объём

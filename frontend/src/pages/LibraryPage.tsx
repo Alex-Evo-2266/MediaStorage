@@ -16,11 +16,20 @@ import { formatFileSize } from '../utils/media'
 
 interface LibraryPageProps {
   items: MediaItem[]
+  loading?: boolean
 }
 
 const filterOptions = ['Все файлы', 'Недавно добавленные', 'Избранное', 'Фото', 'Видео', 'Аудио']
 
-export function LibraryPage({ items }: LibraryPageProps) {
+export function LibraryPage({ items, loading = false }: LibraryPageProps) {
+  if (loading) {
+    return (
+      <Box sx={{ p: 3, borderRadius: 3, bgcolor: '#f7f9fc', border: '1px solid #e5eaf0' }}>
+        <Typography variant="body1" color="text.secondary">Загрузка медиафайлов...</Typography>
+      </Box>
+    )
+  }
+
   return (
     <Stack spacing={2.5}>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>

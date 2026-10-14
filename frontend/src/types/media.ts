@@ -18,4 +18,11 @@ export interface MediaCollection {
   mediaIds: string[]
 }
 
+export interface StorageSummary {
+  usedGb: number
+  totalGb: number
+  freeGb: number
+  percentage: number
+}
+
 export type AppView = 'library' | 'collections' | 'upload'
