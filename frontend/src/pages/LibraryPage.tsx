@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -10,8 +11,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { FavoriteBorder, PlayArrow, OpenInNew } from '@mui/icons-material'
+import { FavoriteBorder, PlayArrow, OpenInNew, SearchOff } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import type { MediaFilter } from '../features/media/useLibraryFilters'
 import type { MediaItem } from '../types/media'
 import { formatFileSize } from '../utils/media'
 
@@ -23,11 +25,18 @@ interface LibraryPageProps {
   loading?: boolean
   selectedItemId?: string | null
   onSelectItem?: (item: MediaItem) => void
+  filter?: MediaFilter
+  onFilterChange?: (filter: MediaFilter) => void
 }
 
-const filterOptions = ['Все файлы', 'Недавно добавленные', 'Избранное', 'Фото', 'Видео', 'Аудио']
+const filterOptions: Array<{ id: MediaFilter; label: string }> = [
+  { id: 'all', label: 'Все файлы' },
+  { id: 'image', label: 'Фото' },
+  { id: 'video', label: 'Видео' },
+  { id: 'audio', label: 'Аудио' },
+]
 
-export function LibraryPage({ items, view = 'all', loading = false, selectedItemId, onSelectItem }: LibraryPageProps) {
+export function LibraryPage({ items, view = 'all', loading = false, selectedItemId, onSelectItem, filter = 'all', onFilterChange }: LibraryPageProps) {
   const navigate = useNavigate()
 
   const titleByView: Record<LibraryView, string> = {
@@ -49,6 +58,42 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
   const isSingleTypeView = view !== 'all'
   const sectionItems = isSingleTypeView ? items : items
 
+  const renderEmptyState = (message: string) => (
+    <Alert
+      icon={<SearchOff fontSize="inherit" />}
+      severity="info"
+      sx={{
+        borderRadius: 3,
+        border: '1px solid #dfe7ff',
+        bgcolor: '#f4f7ff',
+        color: '#27406d',
+        '& .MuiAlert-message': { width: '100%' },
+      }}
+    >
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+        Ничего не найдено
+      </Typography>
+      <Typography variant="body2">{message}</Typography>
+    </Alert>
+  )
+
+  if (!items.length) {
+    const emptyMessage = isSingleTypeView
+      ? `По запросу в разделе ${currentTitle.toLowerCase()} нет подходящих файлов.`
+      : 'Попробуйте изменить запрос или выбрать другой тип медиа.'
+
+    return (
+      <Stack spacing={2.5}>
+        <Box>
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#171d2a' }}>
+            {currentTitle}
+          </Typography>
+        </Box>
+        {renderEmptyState(emptyMessage)}
+      </Stack>
+    )
+  }
+
   return (
     <Stack spacing={2.5}>
       <Box>
@@ -62,21 +107,22 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
 
       {!isSingleTypeView && (
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-          {filterOptions.map((option, index) => (
+          {filterOptions.map((option) => (
             <Button
-              key={option}
-              variant={index === 0 ? 'contained' : 'text'}
+              key={option.id}
+              variant={filter === option.id ? 'contained' : 'text'}
               size="small"
+              onClick={() => onFilterChange?.(option.id)}
               sx={{
                 borderRadius: 2,
                 textTransform: 'none',
-                bgcolor: index === 0 ? '#e8eefb' : 'transparent',
-                color: index === 0 ? '#1d4ed8' : '#4c5d73',
-                fontWeight: index === 0 ? 700 : 500,
+                bgcolor: filter === option.id ? '#e8eefb' : 'transparent',
+                color: filter === option.id ? '#1d4ed8' : '#4c5d73',
+                fontWeight: filter === option.id ? 700 : 500,
                 px: 1.5,
               }}
             >
-              {option}
+              {option.label}
             </Button>
           ))}
         </Stack>

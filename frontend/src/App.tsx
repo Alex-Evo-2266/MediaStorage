@@ -9,6 +9,7 @@ import {
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { SidebarNavigation } from './components/navigation/SidebarNavigation'
 import { TopBar } from './components/navigation/TopBar'
+import { useLibraryFilters } from './features/media/useLibraryFilters'
 import { useMediaCollections } from './features/media/useMediaCollections'
 import { useMediaLibrary } from './features/media/useMediaLibrary'
 import { useStorageSummary } from './features/media/useStorageSummary'
@@ -65,13 +66,13 @@ const viewToPath: Record<AppView, string> = {
 function App() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [searchValue, setSearchValue] = useState('')
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   const { items: mediaItems, loading: mediaLoading } = useMediaLibrary()
   const { items: collections } = useMediaCollections()
   const { summary: storageSummary } = useStorageSummary()
+  const { query: searchValue, setQuery: setSearchValue, filter, setFilter, filteredItems } = useLibraryFilters(mediaItems)
 
   useEffect(() => {
     if (!mediaItems.length) {
@@ -113,11 +114,7 @@ function App() {
     [mediaItems],
   )
 
-  const filteredMedia = useMemo(() => {
-    const query = searchValue.trim().toLowerCase()
-    if (!query) return mediaItems
-    return mediaItems.filter((item) => item.title.toLowerCase().includes(query))
-  }, [mediaItems, searchValue])
+  const filteredMedia = filteredItems
 
   const title = useMemo(() => {
     if (activeView === 'images') return 'Фото'
@@ -177,6 +174,8 @@ function App() {
                       onSelectItem={handleSelectItem}
                       collections={collections}
                       onOpenPreview={() => setIsPreviewOpen(true)}
+                      filter={filter}
+                      onFilterChange={setFilter}
                     />
                   }
                 />
@@ -189,6 +188,8 @@ function App() {
                       loading={mediaLoading}
                       selectedItemId={selectedItemId}
                       onSelectItem={handleSelectItem}
+                      filter={filter}
+                      onFilterChange={setFilter}
                     />
                   }
                 />
@@ -201,6 +202,8 @@ function App() {
                       loading={mediaLoading}
                       selectedItemId={selectedItemId}
                       onSelectItem={handleSelectItem}
+                      filter={filter}
+                      onFilterChange={setFilter}
                     />
                   }
                 />
@@ -213,6 +216,8 @@ function App() {
                       loading={mediaLoading}
                       selectedItemId={selectedItemId}
                       onSelectItem={handleSelectItem}
+                      filter={filter}
+                      onFilterChange={setFilter}
                     />
                   }
                 />

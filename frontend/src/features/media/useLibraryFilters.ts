@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { MediaItem } from '../../types/media'
 
-export type MediaFilter = 'all' | 'recent' | 'favorite' | 'image' | 'video' | 'audio'
+export type MediaFilter = 'all' | 'image' | 'video' | 'audio'
 
 export function useLibraryFilters(items: MediaItem[]) {
   const [query, setQuery] = useState('')
@@ -12,9 +12,7 @@ export function useLibraryFilters(items: MediaItem[]) {
     let nextItems = [...items]
 
     if (filter !== 'all') {
-      if (filter === 'image' || filter === 'video' || filter === 'audio') {
-        nextItems = nextItems.filter((item) => item.type === filter)
-      }
+      nextItems = nextItems.filter((item) => item.type === filter)
     }
 
     if (normalized) {

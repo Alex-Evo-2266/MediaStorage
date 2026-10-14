@@ -7,6 +7,7 @@ import {
   Typography,
 } from '@mui/material'
 import { FolderOutlined, MoreHoriz } from '@mui/icons-material'
+import type { MediaFilter } from '../features/media/useLibraryFilters'
 import type { MediaCollection, MediaItem } from '../types/media'
 import { LibraryPage } from './LibraryPage'
 import { SelectedMediaPanel } from '../widgets/media/SelectedMediaPanel'
@@ -19,6 +20,8 @@ interface LibraryOverviewPageProps {
   onSelectItem: (item: MediaItem) => void
   collections: MediaCollection[]
   onOpenPreview: () => void
+  filter?: MediaFilter
+  onFilterChange?: (filter: MediaFilter) => void
 }
 
 export function LibraryOverviewPage({
@@ -28,6 +31,8 @@ export function LibraryOverviewPage({
   onSelectItem,
   collections,
   onOpenPreview,
+  filter,
+  onFilterChange,
 }: LibraryOverviewPageProps) {
   const selectedItem = items.find((item) => item.id === selectedItemId) ?? null
 
@@ -43,6 +48,8 @@ export function LibraryOverviewPage({
           loading={loading}
           selectedItemId={selectedItemId}
           onSelectItem={onSelectItem}
+          filter={filter}
+          onFilterChange={onFilterChange}
         />
       </Box>
 
