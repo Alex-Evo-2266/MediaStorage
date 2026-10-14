@@ -54,6 +54,7 @@ export function UploadFilesCard() {
   const [items, setItems] = useState<PendingUploadItem[]>([])
   const [errorMessage, setErrorMessage] = useState('')
   const [infoMessage, setInfoMessage] = useState('')
+  const [isDragActive, setIsDragActive] = useState(false)
 
   const addFiles = (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return
@@ -139,8 +140,31 @@ export function UploadFilesCard() {
     }, 600)
   }
 
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setIsDragActive(false)
+    addFiles(event.dataTransfer.files)
+  }
+
   return (
-    <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0' }}>
+    <Card
+      onDragOver={(event) => {
+        event.preventDefault()
+        setIsDragActive(true)
+      }}
+      onDragLeave={(event) => {
+        event.preventDefault()
+        setIsDragActive(false)
+      }}
+      onDrop={handleDrop}
+      sx={{
+        borderRadius: 3,
+        bgcolor: '#f7f9fb',
+        border: `1px solid ${isDragActive ? '#a9bdf9' : '#e5eaf0'}`,
+        boxShadow: isDragActive ? '0 0 0 3px rgba(87, 121, 255, 0.12)' : 'none',
+        transition: 'all 0.2s ease',
+      }}
+    >
       <CardContent sx={{ p: 2.25 }}>
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
@@ -171,7 +195,7 @@ export function UploadFilesCard() {
         </Button>
 
         <Typography variant="caption" sx={{ color: '#4d5d73' }}>
-          Перетащите файлы в окно или выберите вручную.
+          {isDragActive ? 'Отпустите файлы, чтобы загрузить их.' : 'Перетащите файлы в окно или выберите вручную.'}
         </Typography>
 
         {errorMessage ? (
