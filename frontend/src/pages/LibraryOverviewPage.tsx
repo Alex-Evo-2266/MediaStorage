@@ -5,6 +5,8 @@ import {
   IconButton,
   Stack,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { FolderOutlined, MoreHoriz } from '@mui/icons-material'
 import type { MediaFilter } from '../features/media/useLibraryFilters'
@@ -34,15 +36,17 @@ export function LibraryOverviewPage({
   filter,
   onFilterChange,
 }: LibraryOverviewPageProps) {
+  const theme = useTheme()
+  const showPreviewPanel = useMediaQuery(theme.breakpoints.up('xl'))
   const selectedItem = items.find((item) => item.id === selectedItemId) ?? null
 
   return (
     <Stack
       direction={{ xs: 'column', xl: 'row' }}
       spacing={3}
-      sx={{ minHeight: '100%', alignItems: 'flex-start' }}
+      sx={{ minHeight: '100%', alignItems: 'stretch', width: '100%' }}
     >
-      <Box sx={{ flex: 1, minWidth: 0, minHeight: 0 }}>
+      <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, width: '100%' }}>
         <LibraryPage
           items={items}
           loading={loading}
@@ -54,7 +58,7 @@ export function LibraryOverviewPage({
       </Box>
 
       <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 }, flexShrink: 0, minHeight: 0 }}>
-        <SelectedMediaPanel item={selectedItem} onOpenPreview={onOpenPreview} />
+        {showPreviewPanel ? <SelectedMediaPanel item={selectedItem} onOpenPreview={onOpenPreview} /> : null}
         <UploadFilesCard />
 
         <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0' }}>

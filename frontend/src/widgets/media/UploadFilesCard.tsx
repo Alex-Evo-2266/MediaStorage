@@ -188,7 +188,7 @@ export function UploadFilesCard() {
             ref={inputRef}
             hidden
             type="file"
-            accept="image/*,video/*,audio/*"
+            accept="*/*"
             multiple
             onChange={(event) => addFiles(event.target.files)}
           />

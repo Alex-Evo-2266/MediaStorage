@@ -52,11 +52,12 @@ export function SidebarNavigation({
   return (
     <Stack
       sx={{
-        width: { xs: '100%', sm: 250 },
-        height: '100vh',
+        width: { xs: '100%', lg: 250 },
+        height: { xs: 'auto', lg: '100vh' },
         bgcolor: '#eef1f5',
-        borderRight: '1px solid #dde3ea',
-        px: 1.5,
+        borderRight: { xs: 'none', lg: '1px solid #dde3ea' },
+        borderBottom: { xs: '1px solid #dde3ea', lg: 'none' },
+        px: { xs: 1.25, sm: 1.5 },
         py: 1.25,
         overflowY: 'auto',
         overflowX: 'hidden',

@@ -31,9 +31,9 @@ export function SelectedMediaPanel({ item, onOpenPreview }: SelectedMediaPanelPr
   const mediaLabel = item.type === 'image' ? 'Фото' : item.type === 'video' ? 'Видео' : 'Аудио'
 
   return (
-    <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0', overflow: 'hidden', height: '100%' }}>
-      <CardContent sx={{ p: 2.25, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+    <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0', overflow: 'hidden', height: 'auto', minHeight: 0 }}>
+      <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
             Выбрано
           </Typography>
@@ -47,7 +47,6 @@ export function SelectedMediaPanel({ item, onOpenPreview }: SelectedMediaPanelPr
             borderRadius: 2,
             overflow: 'hidden',
             border: '1px solid #e5eaf0',
-            mb: 2,
             cursor: 'pointer',
             '&:hover .preview-overlay': { opacity: 1 },
           }}
@@ -58,7 +57,7 @@ export function SelectedMediaPanel({ item, onOpenPreview }: SelectedMediaPanelPr
             alt={item.title}
             sx={{
               width: '100%',
-              height: 200,
+              height: 128,
               display: 'block',
               objectFit: 'cover',
             }}
@@ -91,11 +90,11 @@ export function SelectedMediaPanel({ item, onOpenPreview }: SelectedMediaPanelPr
           </Box>
         </Box>
 
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, lineHeight: 1.3 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3, mt: 0.25 }}>
           {item.title}
         </Typography>
 
-        <Stack spacing={0.9} sx={{ mt: 'auto' }}>
+        <Stack spacing={0.7} sx={{ mt: 0 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', color: '#5d6d82' }}>
             <Typography variant="caption">Формат</Typography>
             <Typography variant="caption" sx={{ color: '#202a39', fontWeight: 600 }}>
@@ -127,7 +126,7 @@ export function SelectedMediaPanel({ item, onOpenPreview }: SelectedMediaPanelPr
           fullWidth
           startIcon={<OpenInFull fontSize="small" />}
           onClick={onOpenPreview}
-          sx={{ mt: 2, py: 1 }}
+          sx={{ mt: 0.5, py: 1 }}
         >
           Открыть в увеличенном виде
         </Button>

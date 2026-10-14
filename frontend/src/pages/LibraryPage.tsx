@@ -275,31 +275,33 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
             )}
           </Stack>
 
-          <Box sx={{ bgcolor: '#f7f9fc', border: '1px solid #e5eaf0', borderRadius: 3, overflow: 'hidden' }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.5, borderBottom: '1px solid #e5eaf0' }}>
-              <Typography variant="caption" color="text.secondary">#</Typography>
-              <Typography variant="caption" color="text.secondary">Название</Typography>
-              <Typography variant="caption" color="text.secondary">Исполнитель</Typography>
-              <Typography variant="caption" color="text.secondary">Формат</Typography>
-              <Typography variant="caption" color="text.secondary">Размер</Typography>
-              <Box />
-            </Box>
-
-            {(view === 'audio' ? sectionItems : items.filter((item) => item.type === 'audio')).slice(0, isSingleTypeView ? undefined : 3).map((track, index) => (
-              <Box key={track.id} sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.3, alignItems: 'center', borderBottom: index === 2 ? 'none' : '1px solid #e5eaf0' }}>
-                <Typography variant="body2" color="text.secondary">{String(index + 1).padStart(2, '0')}</Typography>
-                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                  <Box sx={{ width: 26, height: 26, borderRadius: 1, bgcolor: '#dde7ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <PlayArrow sx={{ fontSize: 14, color: '#1d4ed8' }} />
-                  </Box>
-                  <Typography variant="body2">{track.title}</Typography>
-                </Stack>
-                <Typography variant="body2" color="text.secondary">{index === 0 ? 'Mujice' : index === 1 ? 'Сироткин' : 'Kedr Livanskiy'}</Typography>
-                <Typography variant="body2" color="text.secondary">{index === 0 ? 'FLAC - 32 Бит' : 'MP3 - 9.4 МБ'}</Typography>
-                <Typography variant="body2" color="text.secondary">{formatFileSize(track.size)}</Typography>
-                <IconButton size="small" sx={{ color: '#58687d' }}><OpenInNew fontSize="small" /></IconButton>
+          <Box sx={{ bgcolor: '#f7f9fc', border: '1px solid #e5eaf0', borderRadius: 3, overflowX: 'auto' }}>
+            <Box sx={{ minWidth: 560 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.5, borderBottom: '1px solid #e5eaf0' }}>
+                <Typography variant="caption" color="text.secondary">#</Typography>
+                <Typography variant="caption" color="text.secondary">Название</Typography>
+                <Typography variant="caption" color="text.secondary">Исполнитель</Typography>
+                <Typography variant="caption" color="text.secondary">Формат</Typography>
+                <Typography variant="caption" color="text.secondary">Размер</Typography>
+                <Box />
               </Box>
-            ))}
+
+              {(view === 'audio' ? sectionItems : items.filter((item) => item.type === 'audio')).slice(0, isSingleTypeView ? undefined : 3).map((track, index) => (
+                <Box key={track.id} sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.3, alignItems: 'center', borderBottom: index === 2 ? 'none' : '1px solid #e5eaf0' }}>
+                  <Typography variant="body2" color="text.secondary">{String(index + 1).padStart(2, '0')}</Typography>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
+                    <Box sx={{ width: 26, height: 26, borderRadius: 1, bgcolor: '#dde7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <PlayArrow sx={{ fontSize: 14, color: '#1d4ed8' }} />
+                    </Box>
+                    <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.title}</Typography>
+                  </Stack>
+                  <Typography variant="body2" color="text.secondary">{index === 0 ? 'Mujice' : index === 1 ? 'Сироткин' : 'Kedr Livanskiy'}</Typography>
+                  <Typography variant="body2" color="text.secondary">{index === 0 ? 'FLAC - 32 Бит' : 'MP3 - 9.4 МБ'}</Typography>
+                  <Typography variant="body2" color="text.secondary">{formatFileSize(track.size)}</Typography>
+                  <IconButton size="small" sx={{ color: '#58687d' }}><OpenInNew fontSize="small" /></IconButton>
+                </Box>
+              ))}
+            </Box>
           </Box>
         </Box>
       )}

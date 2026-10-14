@@ -171,8 +171,8 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ minHeight: '100vh', bgcolor: '#edf1f5', color: '#1d2430', p: { xs: 0, md: 1 }, overflow: 'hidden' }}>
-        <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh', height: '100vh' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#edf1f5', color: '#1d2430', p: { xs: 0, md: 1 } }}>
+        <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh', width: '100%' }}>
           <SidebarNavigation
             activeView={activeView}
             onViewChange={handleViewChange}
@@ -181,10 +181,10 @@ function App() {
             mediaCounts={mediaCounts}
           />
 
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
             <TopBar title={title} searchValue={searchValue} onSearchChange={setSearchValue} />
 
-            <Box sx={{ p: { xs: 2, md: 3 }, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+            <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
               <Routes>
                 <Route path="/" element={<Navigate to="/library" replace />} />
                 <Route

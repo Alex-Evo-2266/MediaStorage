@@ -75,7 +75,7 @@ export function SelectedMediaPreview({ item, open, onClose, onNext, onPrevious }
           </Stack>
 
           <Box sx={{ display: 'flex', alignItems: 'stretch', minHeight: 0, overflow: 'hidden' }}>
-            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#edf2f7', minHeight: { xs: 320, md: 480 } }}>
+            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#edf2f7', minHeight: { xs: 260, md: 360, xl: 420 } }}>
               <Box
                 component="img"
                 src={item.previewUrl}
@@ -83,7 +83,7 @@ export function SelectedMediaPreview({ item, open, onClose, onNext, onPrevious }
                 sx={{
                   display: 'block',
                   maxWidth: '100%',
-                  maxHeight: '76vh',
+                  maxHeight: '70vh',
                   width: '100%',
                   objectFit: 'contain',
                 }}
