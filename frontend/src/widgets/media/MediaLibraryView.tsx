@@ -19,22 +19,14 @@ const filterOptions = [
 export function MediaLibraryView({ items, onSelectItem }: MediaLibraryViewProps) {
   return (
     <Stack spacing={2.5}>
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#171d2a' }}>
-            Медиатека
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            10 354 файла · обновлено сегодня в 09:42
-          </Typography>
-        </Box>
-
-        <Stack direction="row" spacing={1.5}>
-          <Button variant="contained" sx={{ borderRadius: 2, textTransform: 'none', bgcolor: '#1e5bff' }}>
-            Загрузить файлы
-          </Button>
-        </Stack>
-      </Stack>
+      <Box>
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#171d2a' }}>
+          Медиатека
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          10 354 файла · обновлено сегодня в 09:42
+        </Typography>
+      </Box>
 
       <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
         {filterOptions.map((option, index) => (
