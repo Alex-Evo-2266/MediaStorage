@@ -1,16 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
-  Card,
-  CardContent,
   CssBaseline,
-  IconButton,
   Stack,
   ThemeProvider,
-  Typography,
   createTheme,
 } from '@mui/material'
-import { FolderOutlined, MoreHoriz } from '@mui/icons-material'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { SidebarNavigation } from './components/navigation/SidebarNavigation'
 import { TopBar } from './components/navigation/TopBar'
@@ -21,9 +16,7 @@ import { CollectionsPage } from './pages/CollectionsPage'
 import { LibraryPage } from './pages/LibraryPage'
 import { UploadPage } from './pages/UploadPage'
 import type { AppView, MediaItem } from './types/media'
-import { SelectedMediaPanel } from './widgets/media/SelectedMediaPanel'
 import { SelectedMediaPreview } from './widgets/media/SelectedMediaPreview'
-import { UploadFilesCard } from './widgets/media/UploadFilesCard'
 
 const theme = createTheme({
   palette: {
@@ -76,7 +69,7 @@ function App() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   const { items: mediaItems, loading: mediaLoading } = useMediaLibrary()
-  const { items: collections, loading: collectionsLoading } = useMediaCollections()
+  const { items: collections } = useMediaCollections()
   const { summary: storageSummary } = useStorageSummary()
 
   useEffect(() => {
@@ -136,10 +129,11 @@ function App() {
 
   const selectedItem = mediaItems.find((item) => item.id === selectedItemId) ?? null
   const selectedIndex = selectedItem ? mediaItems.findIndex((item) => item.id === selectedItem.id) : -1
+  const isMediaSectionPage = activeView === 'images' || activeView === 'videos' || activeView === 'audio'
 
   const handleSelectItem = (item: MediaItem) => {
     setSelectedItemId(item.id)
-    setIsPreviewOpen(false)
+    setIsPreviewOpen(isMediaSectionPage)
   }
 
   const handleViewChange = (view: AppView) => {
@@ -170,7 +164,11 @@ function App() {
             <TopBar title={title} searchValue={searchValue} onSearchChange={setSearchValue} />
 
             <Box sx={{ p: { xs: 2, md: 3 }, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-              <Stack direction={{ xs: 'column', xl: 'row' }} spacing={3} sx={{ minHeight: '100%', alignItems: 'flex-start' }}>
+              <Stack
+                direction={{ xs: 'column', xl: 'row' }}
+                spacing={3}
+                sx={{ minHeight: '100%', alignItems: 'flex-start' }}
+              >
                 <Box sx={{ flex: 1, minWidth: 0, minHeight: 0 }}>
                   <Routes>
                     <Route path="/" element={<Navigate to="/library" replace />} />
@@ -225,63 +223,6 @@ function App() {
                     <Route path="/upload" element={<UploadPage />} />
                   </Routes>
                 </Box>
-
-                <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 }, flexShrink: 0, minHeight: 0 }}>
-                  <UploadFilesCard />
-                  <SelectedMediaPanel item={selectedItem} onOpenPreview={() => setIsPreviewOpen(true)} />
-
-                  <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0' }}>
-                    <CardContent sx={{ p: 2.25 }}>
-                      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                          Коллекции
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">Все {collections.length}</Typography>
-                      </Stack>
-
-                      {!collectionsLoading && collections.map((collection) => (
-                        <Box
-                          key={collection.id}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            borderRadius: 2,
-                            bgcolor: '#f2f5f8',
-                            px: 1.2,
-                            py: 1.2,
-                            mb: 1,
-                          }}
-                        >
-                          <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center' }}>
-                            <Box
-                              sx={{
-                                width: 28,
-                                height: 28,
-                                borderRadius: 1.4,
-                                bgcolor: '#dfeaff',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <FolderOutlined sx={{ fontSize: 16, color: '#2b5ae7' }} />
-                            </Box>
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>{collection.name}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {collection.mediaIds.length} файлов
-                              </Typography>
-                            </Box>
-                          </Stack>
-                          <IconButton size="small">
-                            <MoreHoriz fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      ))}
-                    </CardContent>
-                  </Card>
-                </Stack>
               </Stack>
             </Box>
           </Box>
