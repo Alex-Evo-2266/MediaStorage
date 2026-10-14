@@ -13,6 +13,7 @@ import { useMediaCollections } from './features/media/useMediaCollections'
 import { useMediaLibrary } from './features/media/useMediaLibrary'
 import { useStorageSummary } from './features/media/useStorageSummary'
 import { CollectionsPage } from './pages/CollectionsPage'
+import { LibraryOverviewPage } from './pages/LibraryOverviewPage'
 import { LibraryPage } from './pages/LibraryPage'
 import { UploadPage } from './pages/UploadPage'
 import type { AppView, MediaItem } from './types/media'
@@ -164,66 +165,60 @@ function App() {
             <TopBar title={title} searchValue={searchValue} onSearchChange={setSearchValue} />
 
             <Box sx={{ p: { xs: 2, md: 3 }, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-              <Stack
-                direction={{ xs: 'column', xl: 'row' }}
-                spacing={3}
-                sx={{ minHeight: '100%', alignItems: 'flex-start' }}
-              >
-                <Box sx={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/library" replace />} />
-                    <Route
-                      path="/library"
-                      element={
-                        <LibraryPage
-                          items={filteredMedia}
-                          loading={mediaLoading}
-                          selectedItemId={selectedItemId}
-                          onSelectItem={handleSelectItem}
-                        />
-                      }
+              <Routes>
+                <Route path="/" element={<Navigate to="/library" replace />} />
+                <Route
+                  path="/library"
+                  element={
+                    <LibraryOverviewPage
+                      items={filteredMedia}
+                      loading={mediaLoading}
+                      selectedItemId={selectedItemId}
+                      onSelectItem={handleSelectItem}
+                      collections={collections}
+                      onOpenPreview={() => setIsPreviewOpen(true)}
                     />
-                    <Route
-                      path="/images"
-                      element={
-                        <LibraryPage
-                          items={filteredMedia.filter((item) => item.type === 'image')}
-                          view="image"
-                          loading={mediaLoading}
-                          selectedItemId={selectedItemId}
-                          onSelectItem={handleSelectItem}
-                        />
-                      }
+                  }
+                />
+                <Route
+                  path="/images"
+                  element={
+                    <LibraryPage
+                      items={filteredMedia.filter((item) => item.type === 'image')}
+                      view="image"
+                      loading={mediaLoading}
+                      selectedItemId={selectedItemId}
+                      onSelectItem={handleSelectItem}
                     />
-                    <Route
-                      path="/videos"
-                      element={
-                        <LibraryPage
-                          items={filteredMedia.filter((item) => item.type === 'video')}
-                          view="video"
-                          loading={mediaLoading}
-                          selectedItemId={selectedItemId}
-                          onSelectItem={handleSelectItem}
-                        />
-                      }
+                  }
+                />
+                <Route
+                  path="/videos"
+                  element={
+                    <LibraryPage
+                      items={filteredMedia.filter((item) => item.type === 'video')}
+                      view="video"
+                      loading={mediaLoading}
+                      selectedItemId={selectedItemId}
+                      onSelectItem={handleSelectItem}
                     />
-                    <Route
-                      path="/audio"
-                      element={
-                        <LibraryPage
-                          items={filteredMedia.filter((item) => item.type === 'audio')}
-                          view="audio"
-                          loading={mediaLoading}
-                          selectedItemId={selectedItemId}
-                          onSelectItem={handleSelectItem}
-                        />
-                      }
+                  }
+                />
+                <Route
+                  path="/audio"
+                  element={
+                    <LibraryPage
+                      items={filteredMedia.filter((item) => item.type === 'audio')}
+                      view="audio"
+                      loading={mediaLoading}
+                      selectedItemId={selectedItemId}
+                      onSelectItem={handleSelectItem}
                     />
-                    <Route path="/collections" element={<CollectionsPage collections={collections} />} />
-                    <Route path="/upload" element={<UploadPage />} />
-                  </Routes>
-                </Box>
-              </Stack>
+                  }
+                />
+                <Route path="/collections" element={<CollectionsPage collections={collections} />} />
+                <Route path="/upload" element={<UploadPage />} />
+              </Routes>
             </Box>
           </Box>
         </Stack>
