@@ -1,0 +1,1 @@
+используй tz.md, .github/copilot-instructions.md. а также смотри основную инструкцию в step-6-responsive.md проверь и адаптируй главную страницу онаже "Обзор"
