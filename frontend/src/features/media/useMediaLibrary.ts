@@ -47,17 +47,47 @@ export function useMediaLibrary() {
   }, [refresh])
 
   const renameItem = async (mediaId: string, title: string) => {
-    await mediaApi.updateMediaTitle(mediaId, title)
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === mediaId ? { ...item, title: title.trim() } : item,
-      ),
-    )
+    try {
+      setError(null)
+
+      await mediaApi.updateMediaTitle(mediaId, title)
+
+      setItems((currentItems) =>
+        currentItems.map((item) =>
+          item.id === mediaId
+            ? { ...item, title: title.trim() }
+            : item,
+        ),
+      )
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Не удалось переименовать файл'
+
+      setError(message)
+      throw err
+    }
   }
 
   const deleteItem = async (mediaId: string) => {
-    await mediaApi.deleteMediaItem(mediaId)
-    setItems((currentItems) => currentItems.filter((item) => item.id !== mediaId))
+    try {
+      setError(null)
+
+      await mediaApi.deleteMediaItem(mediaId)
+
+      setItems((currentItems) =>
+        currentItems.filter((item) => item.id !== mediaId),
+      )
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Не удалось удалить файл'
+
+      setError(message)
+      throw err
+    }
   }
 
   return {

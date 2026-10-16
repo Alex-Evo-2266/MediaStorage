@@ -377,7 +377,9 @@ async getStorageSummary(): Promise<StorageSummary> {
     .select('size')
 
   if (error) {
-    throw error
+    throw new Error(
+      `Не удалось получить информацию о хранилище: ${error.message}`,
+    )
   }
 
   const usedBytes = (data ?? []).reduce(
@@ -436,14 +438,45 @@ async getStorageSummary(): Promise<StorageSummary> {
 
 export async function uploadMediaFile(file: File): Promise<void> {
   // 1. Проверяем авторизацию.
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
+// 1. Проверяем авторизацию.
+const {
+  data: { user },
+  error: userError,
+} = await supabase.auth.getUser()
 
-  if (userError || !user) {
-    throw new Error('Для загрузки файлов необходимо войти в систему.')
+if (userError) {
+  const message = userError.message.toLowerCase()
+
+  if (
+    message.includes('network') ||
+    message.includes('fetch') ||
+    message.includes('timeout') ||
+    message.includes('failed to connect')
+  ) {
+    throw new Error(
+      'Не удалось связаться с сервером. Проверьте подключение к интернету и попробуйте снова.',
+    )
   }
+
+  if (
+    message.includes('jwt') ||
+    message.includes('token') ||
+    message.includes('session') ||
+    message.includes('unauthorized')
+  ) {
+    throw new Error(
+      'Сессия истекла. Войдите в систему повторно.',
+    )
+  }
+
+  throw new Error(
+    `Не удалось проверить авторизацию: ${userError.message}`,
+  )
+}
+
+if (!user) {
+  throw new Error('Для загрузки файлов необходимо войти в систему.')
+}
 
   // 2. Определяем тип медиа.
   let type: 'image' | 'video' | 'audio'

@@ -142,7 +142,7 @@ export function useMediaCollections() {
   )
 
   const deleteCollection = useCallback(
-    async (collectionId: string): Promise<void> => {
+    async (collectionId: string): Promise<boolean> => {
       try {
         setError(null)
 
@@ -151,12 +151,16 @@ export function useMediaCollections() {
         setItems((current) =>
           current.filter((collection) => collection.id !== collectionId),
         )
+
+        return true
       } catch (err) {
         setError(
           err instanceof Error
             ? err.message
             : 'Не удалось удалить коллекцию',
         )
+
+        return false
       }
     },
     [],
