@@ -1,3 +1,4 @@
+
 import {
   Alert,
   Box,
@@ -11,7 +12,11 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { FavoriteBorder, PlayArrow, OpenInNew, SearchOff } from '@mui/icons-material'
+import {
+  PlayArrow,
+  OpenInNew,
+  SearchOff,
+} from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import type { MediaFilter } from '../features/media/useLibraryFilters'
 import type { MediaItem } from '../types/media'
@@ -36,7 +41,15 @@ const filterOptions: Array<{ id: MediaFilter; label: string }> = [
   { id: 'audio', label: 'Аудио' },
 ]
 
-export function LibraryPage({ items, view = 'all', loading = false, selectedItemId, onSelectItem, filter = 'all', onFilterChange }: LibraryPageProps) {
+export function LibraryPage({
+  items,
+  view = 'all',
+  loading = false,
+  selectedItemId,
+  onSelectItem,
+  filter = 'all',
+  onFilterChange,
+}: LibraryPageProps) {
   const navigate = useNavigate()
 
   const titleByView: Record<LibraryView, string> = {
@@ -48,15 +61,24 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
 
   if (loading) {
     return (
-      <Box sx={{ p: 3, borderRadius: 3, bgcolor: '#f7f9fc', border: '1px solid #e5eaf0' }}>
-        <Typography variant="body1" color="text.secondary">Загрузка медиафайлов...</Typography>
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          bgcolor: '#f7f9fc',
+          border: '1px solid #e5eaf0',
+        }}
+      >
+        <Typography variant="body1" color="text.secondary">
+          Загрузка медиафайлов...
+        </Typography>
       </Box>
     )
   }
 
   const currentTitle = titleByView[view]
   const isSingleTypeView = view !== 'all'
-  const sectionItems = isSingleTypeView ? items : items
+  const sectionItems = items
 
   const renderEmptyState = (message: string) => (
     <Alert
@@ -79,13 +101,17 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
 
   if (!items.length) {
     const emptyMessage = isSingleTypeView
-      ? `По запросу в разделе ${currentTitle.toLowerCase()} нет подходящих файлов.`
+      ? `В разделе ${currentTitle.toLowerCase()} пока нет подходящих файлов.`
       : 'Попробуйте изменить запрос или выбрать другой тип медиа.'
 
     return (
       <Stack spacing={2.5}>
         <Box>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#171d2a' }}>
+          <Typography
+            variant="h5"
+            component="h2"
+            sx={{ fontWeight: 700, color: '#171d2a' }}
+          >
             {currentTitle}
           </Typography>
         </Box>
@@ -97,7 +123,11 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
   return (
     <Stack spacing={2.5}>
       <Box>
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: '#171d2a' }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{ fontWeight: 700, color: '#171d2a' }}
+        >
           {currentTitle}
         </Typography>
         <Typography variant="caption" color="text.secondary">
@@ -116,7 +146,8 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
               sx={{
                 borderRadius: 2,
                 textTransform: 'none',
-                bgcolor: filter === option.id ? '#e8eefb' : 'transparent',
+                bgcolor:
+                  filter === option.id ? '#e8eefb' : 'transparent',
                 color: filter === option.id ? '#1d4ed8' : '#4c5d73',
                 fontWeight: filter === option.id ? 700 : 500,
                 px: 1.5,
@@ -128,12 +159,25 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
         </Stack>
       )}
 
+      {/* Изображения */}
       {(!isSingleTypeView || view === 'image') && (
         <Box>
-          <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1f2735' }}>
-              Изображения · {items.filter((item) => item.type === 'image').length} файлов
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 2,
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 700, color: '#1f2735' }}
+            >
+              Изображения ·{' '}
+              {items.filter((item) => item.type === 'image').length} файлов
             </Typography>
+
             {!isSingleTypeView && (
               <Button
                 size="small"
@@ -146,61 +190,122 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
           </Stack>
 
           <Grid container spacing={2}>
-            {(view === 'image' ? sectionItems : items.filter((item) => item.type === 'image')).slice(0, isSingleTypeView ? undefined : 4).map((item) => {
-              const isSelected = item.id === selectedItemId
+            {(view === 'image'
+              ? sectionItems
+              : items.filter((item) => item.type === 'image')
+            )
+              .filter((item) => item.type === 'image')
+              .slice(0, isSingleTypeView ? undefined : 4)
+              .map((item) => {
+                const isSelected = item.id === selectedItemId
 
-              return (
-                <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Card
-                    onClick={() => onSelectItem?.(item)}
-                    sx={{
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      bgcolor: '#f7f9fc',
-                      border: isSelected ? '2px solid #2d5ef5' : '1px solid #e5eaf0',
-                      boxShadow: isSelected ? '0 0 0 3px rgba(45, 94, 245, 0.12)' : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      '&:hover': { borderColor: '#b7c9ff' },
-                    }}
-                  >
-                    <Box sx={{ position: 'relative' }}>
-                      <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
-                      <IconButton
-                        size="small"
-                        sx={{ position: 'absolute', right: 10, top: 10, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 999 }}
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <FavoriteBorder fontSize="small" />
-                      </IconButton>
-                    </Box>
-                    <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
-                      <Stack spacing={1}>
-                        <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1d2330' }}>
-                            {item.title}
+                return (
+                  <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Card
+                      onClick={() => onSelectItem?.(item)}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        bgcolor: '#f7f9fc',
+                        border: isSelected
+                          ? '2px solid #2d5ef5'
+                          : '1px solid #e5eaf0',
+                        boxShadow: isSelected
+                          ? '0 0 0 3px rgba(45, 94, 245, 0.12)'
+                          : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': { borderColor: '#b7c9ff' },
+                      }}
+                    >
+                      <Box sx={{ position: 'relative' }}>
+                        {item.previewUrl ? (
+                          <CardMedia
+                            component="img"
+                            height="180"
+                            image={item.previewUrl}
+                            alt={item.title}
+                            sx={{ objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              height: 180,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: '#e5eaf0',
+                            }}
+                          >
+                            <SearchOff
+                              sx={{ fontSize: 38, color: '#64748b' }}
+                            />
+                          </Box>
+                        )}
+                      </Box>
+
+                      <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
+                        <Stack spacing={1}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              sx={{
+                                fontWeight: 600,
+                                color: '#1d2330',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {item.title}
+                            </Typography>
+                            <Chip
+                              label={item.type}
+                              size="small"
+                              variant="outlined"
+                              sx={{ height: 22, fontSize: 10 }}
+                            />
+                          </Stack>
+
+                          <Typography variant="caption" color="text.secondary">
+                            {formatFileSize(item.size)}
                           </Typography>
-                          <Chip label={item.type} size="small" variant="outlined" sx={{ height: 22, fontSize: 10 }} />
                         </Stack>
-                        <Typography variant="caption" color="text.secondary">
-                          {item.type === 'video' ? `${item.duration ?? '00:30'} · ${formatFileSize(item.size)}` : formatFileSize(item.size)}
-                        </Typography>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              )
-            })}
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                )
+              })}
           </Grid>
         </Box>
       )}
 
+      {/* Видео */}
       {(!isSingleTypeView || view === 'video') && (
         <Box>
-          <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1f2735' }}>
-              Видео · {items.filter((item) => item.type === 'video').length} файлов
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 2,
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 700, color: '#1f2735' }}
+            >
+              Видео · {items.filter((item) => item.type === 'video').length}{' '}
+              файлов
             </Typography>
+
             {!isSingleTypeView && (
               <Button
                 size="small"
@@ -213,57 +318,164 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
           </Stack>
 
           <Grid container spacing={2}>
-            {(view === 'video' ? sectionItems : items.filter((item) => item.type === 'video')).slice(0, isSingleTypeView ? undefined : 4).map((item) => {
-              const isSelected = item.id === selectedItemId
+            {(view === 'video'
+              ? sectionItems
+              : items.filter((item) => item.type === 'video')
+            )
+              .filter((item) => item.type === 'video')
+              .slice(0, isSingleTypeView ? undefined : 4)
+              .map((item) => {
+                const isSelected = item.id === selectedItemId
 
-              return (
-                <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Card
-                    onClick={() => onSelectItem?.(item)}
-                    sx={{
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      bgcolor: '#f7f9fc',
-                      border: isSelected ? '2px solid #2d5ef5' : '1px solid #e5eaf0',
-                      boxShadow: isSelected ? '0 0 0 3px rgba(45, 94, 245, 0.12)' : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      '&:hover': { borderColor: '#b7c9ff' },
-                    }}
-                  >
-                    <Box sx={{ position: 'relative' }}>
-                      <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
-                      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,0.12)' }}>
-                        <PlayArrow sx={{ fontSize: 38, color: '#fff' }} />
+                return (
+                  <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Card
+                      onClick={() => onSelectItem?.(item)}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        bgcolor: '#f7f9fc',
+                        border: isSelected
+                          ? '2px solid #2d5ef5'
+                          : '1px solid #e5eaf0',
+                        boxShadow: isSelected
+                          ? '0 0 0 3px rgba(45, 94, 245, 0.12)'
+                          : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': { borderColor: '#b7c9ff' },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          height: 180,
+                          bgcolor: '#111827',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {item.previewUrl ? (
+                          <Box
+                            component="video"
+                            src={item.previewUrl}
+                            preload="metadata"
+                            muted
+                            playsInline
+                            aria-label={item.title}
+                            sx={{
+                              display: 'block',
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <PlayArrow
+                              sx={{ fontSize: 48, color: '#fff' }}
+                            />
+                          </Box>
+                        )}
+
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: 'rgba(0,0,0,0.12)',
+                            pointerEvents: 'none',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: '50%',
+                              bgcolor: 'rgba(0,0,0,0.55)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <PlayArrow
+                              sx={{ fontSize: 34, color: '#fff' }}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
-                    </Box>
-                    <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
-                      <Stack spacing={1}>
-                        <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1d2330' }}>
-                            {item.title}
+
+                      <CardContent sx={{ p: 1.5, pb: '12px !important' }}>
+                        <Stack spacing={1}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              sx={{
+                                fontWeight: 600,
+                                color: '#1d2330',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {item.title}
+                            </Typography>
+                            <Chip
+                              label="Видео"
+                              size="small"
+                              variant="outlined"
+                              sx={{ height: 22, fontSize: 10 }}
+                            />
+                          </Stack>
+
+                          <Typography variant="caption" color="text.secondary">
+                            {item.duration ?? 'Длительность неизвестна'} ·{' '}
+                            {formatFileSize(item.size)}
                           </Typography>
-                          <Chip label={item.type} size="small" variant="outlined" sx={{ height: 22, fontSize: 10 }} />
                         </Stack>
-                        <Typography variant="caption" color="text.secondary">
-                          {item.duration ?? '00:45'} · {formatFileSize(item.size)}
-                        </Typography>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              )
-            })}
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                )
+              })}
           </Grid>
         </Box>
       )}
 
+      {/* Аудио */}
       {(!isSingleTypeView || view === 'audio') && (
         <Box sx={{ mt: 1 }}>
-          <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1f2735' }}>
-              Аудио · {items.filter((item) => item.type === 'audio').length} треков
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 2,
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 700, color: '#1f2735' }}
+            >
+              Аудио · {items.filter((item) => item.type === 'audio').length}{' '}
+              треков
             </Typography>
+
             {!isSingleTypeView && (
               <Button
                 size="small"
@@ -275,32 +487,127 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
             )}
           </Stack>
 
-          <Box sx={{ bgcolor: '#f7f9fc', border: '1px solid #e5eaf0', borderRadius: 3, overflowX: 'auto' }}>
+          <Box
+            sx={{
+              bgcolor: '#f7f9fc',
+              border: '1px solid #e5eaf0',
+              borderRadius: 3,
+              overflowX: 'auto',
+            }}
+          >
             <Box sx={{ minWidth: 560 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.5, borderBottom: '1px solid #e5eaf0' }}>
-                <Typography variant="caption" color="text.secondary">#</Typography>
-                <Typography variant="caption" color="text.secondary">Название</Typography>
-                <Typography variant="caption" color="text.secondary">Исполнитель</Typography>
-                <Typography variant="caption" color="text.secondary">Формат</Typography>
-                <Typography variant="caption" color="text.secondary">Размер</Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px',
+                  px: 2,
+                  py: 1.5,
+                  borderBottom: '1px solid #e5eaf0',
+                }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  #
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Название
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Исполнитель
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Формат
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Размер
+                </Typography>
                 <Box />
               </Box>
 
-              {(view === 'audio' ? sectionItems : items.filter((item) => item.type === 'audio')).slice(0, isSingleTypeView ? undefined : 3).map((track, index) => (
-                <Box key={track.id} sx={{ display: 'grid', gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px', px: 2, py: 1.3, alignItems: 'center', borderBottom: index === 2 ? 'none' : '1px solid #e5eaf0' }}>
-                  <Typography variant="body2" color="text.secondary">{String(index + 1).padStart(2, '0')}</Typography>
-                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
-                    <Box sx={{ width: 26, height: 26, borderRadius: 1, bgcolor: '#dde7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <PlayArrow sx={{ fontSize: 14, color: '#1d4ed8' }} />
-                    </Box>
-                    <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.title}</Typography>
-                  </Stack>
-                  <Typography variant="body2" color="text.secondary">{index === 0 ? 'Mujice' : index === 1 ? 'Сироткин' : 'Kedr Livanskiy'}</Typography>
-                  <Typography variant="body2" color="text.secondary">{index === 0 ? 'FLAC - 32 Бит' : 'MP3 - 9.4 МБ'}</Typography>
-                  <Typography variant="body2" color="text.secondary">{formatFileSize(track.size)}</Typography>
-                  <IconButton size="small" sx={{ color: '#58687d' }}><OpenInNew fontSize="small" /></IconButton>
-                </Box>
-              ))}
+              {(view === 'audio'
+                ? sectionItems
+                : items.filter((item) => item.type === 'audio')
+              )
+                .filter((item) => item.type === 'audio')
+                .slice(0, isSingleTypeView ? undefined : 3)
+                .map((track, index, tracks) => (
+                  <Box
+                    key={track.id}
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '32px 1.2fr 1fr 1fr 1fr 30px',
+                      px: 2,
+                      py: 1.3,
+                      alignItems: 'center',
+                      borderBottom:
+                        index === tracks.length - 1
+                          ? 'none'
+                          : '1px solid #e5eaf0',
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      {String(index + 1).padStart(2, '0')}
+                    </Typography>
+
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      sx={{ alignItems: 'center', minWidth: 0 }}
+                    >
+                      <Box
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: 1,
+                          bgcolor: '#dde7ff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <PlayArrow
+                          sx={{ fontSize: 14, color: '#1d4ed8' }}
+                        />
+                      </Box>
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {track.title}
+                      </Typography>
+                    </Stack>
+
+                    <Typography variant="body2" color="text.secondary">
+                      {index === 0
+                        ? 'Mujice'
+                        : index === 1
+                          ? 'Сироткин'
+                          : 'Kedr Livanskiy'}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                      {index === 0 ? 'FLAC - 32 Бит' : 'MP3 - 9.4 МБ'}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                      {formatFileSize(track.size)}
+                    </Typography>
+
+                    <IconButton
+                      size="small"
+                      aria-label={`Открыть ${track.title}`}
+                      sx={{ color: '#58687d' }}
+                      onClick={() => onSelectItem?.(track)}
+                    >
+                      <OpenInNew fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
             </Box>
           </Box>
         </Box>
@@ -308,3 +615,4 @@ export function LibraryPage({ items, view = 'all', loading = false, selectedItem
     </Stack>
   )
 }
+

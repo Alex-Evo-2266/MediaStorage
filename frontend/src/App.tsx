@@ -19,6 +19,7 @@ import { LibraryPage } from './pages/LibraryPage'
 import { UploadPage } from './pages/UploadPage'
 import type { AppView, MediaItem } from './types/media'
 import { SelectedMediaPreview } from './widgets/media/SelectedMediaPreview'
+import { AuthPanel } from './features/auth/AuthPanel';
 
 const theme = createTheme({
   palette: {
@@ -169,6 +170,8 @@ function App() {
       : undefined
 
   return (
+    <>
+    <AuthPanel/>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ minHeight: '100vh', bgcolor: '#edf1f5', color: '#1d2430', p: { xs: 0, md: 1 } }}>
@@ -272,6 +275,7 @@ function App() {
         onNext={handleNext}
       />
     </ThemeProvider>
+    </>
   )
 }
 
