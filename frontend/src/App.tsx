@@ -32,6 +32,7 @@ import { SelectedMediaPreview } from './widgets/media/SelectedMediaPreview'
 import { AuthPanel } from './features/auth/AuthPanel'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './shared/api/supabaseClient'
+import { getSafeErrorContext, logger } from './shared/lib/logger'
 
 const theme = createTheme({
   palette: {
@@ -103,6 +104,12 @@ function App() {
       .then(({ data, error }) => {
         if (!isMounted || authStateChanged) return
 
+        if (error) {
+          logger.error('auth.session.restore.failed', {
+            operation: 'auth.get_session',
+            ...getSafeErrorContext(error),
+          })
+        }
         setSession(data.session)
         setSessionError(error?.message ?? null)
         setSessionLoading(false)
@@ -110,6 +117,10 @@ function App() {
       .catch((error: unknown) => {
         if (!isMounted || authStateChanged) return
 
+        logger.error('auth.session.restore.failed', {
+          operation: 'auth.get_session',
+          ...getSafeErrorContext(error),
+        })
         setSession(null)
         setSessionError(
           error instanceof Error ? error.message : 'Не удалось проверить сессию.',
@@ -296,7 +307,12 @@ function AuthenticatedApp({ session }: AuthenticatedAppProps) {
     try {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
+      logger.info('auth.sign_out.succeeded', { operation: 'auth.sign_out' })
     } catch (error) {
+      logger.error('auth.sign_out.failed', {
+        operation: 'auth.sign_out',
+        ...getSafeErrorContext(error),
+      })
       setMediaActionMessage({
         text: error instanceof Error ? error.message : 'Не удалось выйти из аккаунта.',
         severity: 'error',

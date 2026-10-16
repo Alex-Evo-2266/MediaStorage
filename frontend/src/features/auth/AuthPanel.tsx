@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { supabase } from '../../shared/api/supabaseClient';
+import { getSafeErrorContext, logger } from '../../shared/lib/logger'
 
 interface AuthPanelProps {
   sessionError?: string | null;
@@ -34,7 +35,12 @@ export function AuthPanel({ sessionError }: AuthPanelProps) {
       });
 
       if (error) throw error;
+      logger.info('auth.sign_in.succeeded', { operation: 'auth.sign_in' })
     } catch (err) {
+      logger.error('auth.sign_in.failed', {
+        operation: 'auth.sign_in',
+        ...getSafeErrorContext(err),
+      })
       setError(err instanceof Error ? err.message : 'Не удалось войти');
     } finally {
       setSubmitting(false);
@@ -54,10 +60,15 @@ export function AuthPanel({ sessionError }: AuthPanelProps) {
 
       if (error) throw error;
 
+      logger.info('auth.sign_up.succeeded', { operation: 'auth.sign_up' })
       setMessage(
         'Регистрация выполнена. Если требуется подтверждение, проверьте почту.',
       );
     } catch (err) {
+      logger.error('auth.sign_up.failed', {
+        operation: 'auth.sign_up',
+        ...getSafeErrorContext(err),
+      })
       setError(err instanceof Error ? err.message : 'Не удалось зарегистрироваться');
     } finally {
       setSubmitting(false);
