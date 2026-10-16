@@ -1,5 +1,4 @@
-
-import { OpenInFull, PlayArrow, AudioFile } from '@mui/icons-material'
+import { DeleteOutlined, EditOutlined, OpenInFull, PlayArrow, AudioFile } from '@mui/icons-material'
 import {
   Box,
   Button,
@@ -7,6 +6,8 @@ import {
   CardContent,
   Chip,
   Stack,
+  IconButton,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import type { MediaItem } from '../../types/media'
@@ -15,6 +16,9 @@ import { formatFileSize } from '../../utils/media'
 interface SelectedMediaPanelProps {
   item: MediaItem | null
   onOpenPreview: () => void
+  onRename: () => void
+  onDelete: () => void
+  actionsDisabled: boolean
 }
 
 function EmptySelectedMedia() {
@@ -51,6 +55,9 @@ function EmptySelectedMedia() {
 export function SelectedMediaPanel({
   item,
   onOpenPreview,
+  onRename,
+  onDelete,
+  actionsDisabled,
 }: SelectedMediaPanelProps) {
   if (!item) {
     return <EmptySelectedMedia />
@@ -316,6 +323,33 @@ export function SelectedMediaPanel({
         >
           Открыть в увеличенном виде
         </Button>
+        <Stack direction="row" spacing={1}>
+          <Tooltip title="Изменить название">
+            <span>
+              <IconButton
+                aria-label="Изменить название файла"
+                onClick={onRename}
+                disabled={actionsDisabled}
+                sx={{ flex: 1, border: '1px solid #dfe5ee', borderRadius: 2 }}
+              >
+                <EditOutlined />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Удалить файл">
+            <span>
+              <IconButton
+                aria-label="Удалить файл"
+                onClick={onDelete}
+                disabled={actionsDisabled}
+                color="error"
+                sx={{ flex: 1, border: '1px solid #f0dada', borderRadius: 2 }}
+              >
+                <DeleteOutlined />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Stack>
       </CardContent>
     </Card>
   )

@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
+  Alert,
+  Button,
   CssBaseline,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
   Stack,
+  TextField,
   ThemeProvider,
   createTheme,
 } from '@mui/material'
@@ -69,8 +78,19 @@ function App() {
   const location = useLocation()
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isMediaMutationPending, setIsMediaMutationPending] = useState(false)
+  const [mediaActionMessage, setMediaActionMessage] = useState<{ text: string; severity: 'success' | 'error' } | null>(null)
+  const [selectionResetByDelete, setSelectionResetByDelete] = useState(false)
 
-  const { items: mediaItems, loading: mediaLoading } = useMediaLibrary()
+  const {
+    items: mediaItems,
+    loading: mediaLoading,
+    renameItem,
+    deleteItem,
+  } = useMediaLibrary()
   const {
     items: collections,
     createCollection,
@@ -82,6 +102,10 @@ function App() {
   const { query: searchValue, setQuery: setSearchValue, filter, setFilter, filteredItems } = useLibraryFilters(mediaItems)
 
   useEffect(() => {
+    if (selectionResetByDelete) {
+      return
+    }
+
     if (!mediaItems.length) {
       setSelectedItemId(null)
       return
@@ -90,7 +114,7 @@ function App() {
     if (!selectedItemId || !mediaItems.some((item) => item.id === selectedItemId)) {
       setSelectedItemId(mediaItems[0].id)
     }
-  }, [mediaItems, selectedItemId])
+  }, [mediaItems, selectedItemId, selectionResetByDelete])
 
   const activeView = useMemo<AppView>(() => {
     switch (location.pathname) {
@@ -140,6 +164,10 @@ function App() {
   }, [activeView, filteredMedia])
 
   useEffect(() => {
+    if (selectionResetByDelete) {
+      return
+    }
+
     if (!previewItems.length) {
       setSelectedItemId(null)
       return
@@ -148,14 +176,59 @@ function App() {
     if (!selectedItemId || !previewItems.some((item) => item.id === selectedItemId)) {
       setSelectedItemId(previewItems[0].id)
     }
-  }, [previewItems, selectedItemId])
+  }, [previewItems, selectedItemId, selectionResetByDelete])
 
   const selectedItem = previewItems.find((item) => item.id === selectedItemId) ?? mediaItems.find((item) => item.id === selectedItemId) ?? null
   const selectedIndex = selectedItem ? previewItems.findIndex((item) => item.id === selectedItem.id) : -1
 
   const handleSelectItem = (item: MediaItem) => {
+    setSelectionResetByDelete(false)
     setSelectedItemId(item.id)
     setIsPreviewOpen(true)
+  }
+
+  const handleOpenRename = () => {
+    if (!selectedItem) return
+    setRenameValue(selectedItem.title)
+    setRenameDialogOpen(true)
+  }
+
+  const handleRename = async () => {
+    if (!selectedItem || !renameValue.trim()) return
+    setIsMediaMutationPending(true)
+    try {
+      await renameItem(selectedItem.id, renameValue)
+      setRenameDialogOpen(false)
+      setMediaActionMessage({ text: 'Название файла обновлено.', severity: 'success' })
+    } catch (error) {
+      setMediaActionMessage({
+        text: error instanceof Error ? error.message : 'Не удалось изменить название файла.',
+        severity: 'error',
+      })
+    } finally {
+      setIsMediaMutationPending(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!selectedItem) return
+    const deletedItemId = selectedItem.id
+    setIsMediaMutationPending(true)
+    try {
+      await deleteItem(deletedItemId)
+      setDeleteDialogOpen(false)
+      setSelectedItemId(null)
+      setSelectionResetByDelete(true)
+      setIsPreviewOpen(false)
+      setMediaActionMessage({ text: 'Файл удалён.', severity: 'success' })
+    } catch (error) {
+      setMediaActionMessage({
+        text: error instanceof Error ? error.message : 'Не удалось удалить файл.',
+        severity: 'error',
+      })
+    } finally {
+      setIsMediaMutationPending(false)
+    }
   }
 
   const handleViewChange = (view: AppView) => {
@@ -200,6 +273,9 @@ function App() {
                       onSelectItem={handleSelectItem}
                       collections={collections}
                       onOpenPreview={() => setIsPreviewOpen(true)}
+                      onRename={handleOpenRename}
+                      onDelete={() => setDeleteDialogOpen(true)}
+                      actionsDisabled={isMediaMutationPending}
                       filter={filter}
                       onFilterChange={setFilter}
                     />
@@ -273,7 +349,72 @@ function App() {
         onClose={() => setIsPreviewOpen(false)}
         onPrevious={handlePrevious}
         onNext={handleNext}
+        onRename={handleOpenRename}
+        onDelete={() => setDeleteDialogOpen(true)}
+        actionsDisabled={isMediaMutationPending}
       />
+      <Dialog
+        open={renameDialogOpen}
+        onClose={() => !isMediaMutationPending && setRenameDialogOpen(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Изменить название</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            margin="dense"
+            label="Название файла"
+            value={renameValue}
+            onChange={(event) => setRenameValue(event.target.value)}
+            disabled={isMediaMutationPending}
+            error={!renameValue.trim()}
+            helperText={!renameValue.trim() ? 'Название не может быть пустым.' : ' '}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenameDialogOpen(false)} disabled={isMediaMutationPending}>Отмена</Button>
+          <Button
+            onClick={() => void handleRename()}
+            variant="contained"
+            disabled={isMediaMutationPending || !renameValue.trim()}
+          >
+            Сохранить
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => !isMediaMutationPending && setDeleteDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Удалить файл?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Файл «{selectedItem?.title}» и его объекты в хранилище будут удалены без возможности восстановления.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={isMediaMutationPending}>Отмена</Button>
+          <Button onClick={() => void handleDelete()} color="error" variant="contained" disabled={isMediaMutationPending}>
+            Удалить
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={Boolean(mediaActionMessage)}
+        autoHideDuration={6000}
+        onClose={() => setMediaActionMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        {mediaActionMessage ? (
+          <Alert onClose={() => setMediaActionMessage(null)} severity={mediaActionMessage.severity} variant="filled">
+            {mediaActionMessage.text}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </ThemeProvider>
     </>
   )

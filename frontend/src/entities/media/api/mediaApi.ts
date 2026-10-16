@@ -92,9 +92,77 @@ export const getMediaItems = async (): Promise<MediaItem[]> => {
 }
 
 
+const updateMediaTitle = async (mediaId: string, title: string): Promise<void> => {
+  const trimmedTitle = title.trim()
+  if (!trimmedTitle) {
+    throw new Error('Название не может быть пустым.')
+  }
+
+  const { data, error } = await supabase
+    .from('media_items')
+    .update({ title: trimmedTitle })
+    .eq('id', mediaId)
+    .select('id')
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(`Не удалось сохранить название: ${error.message}`)
+  }
+  if (!data) {
+    throw new Error('Файл не найден или у вас нет прав на его изменение.')
+  }
+}
+
+const deleteMediaItem = async (mediaId: string): Promise<void> => {
+  const { data: media, error: mediaError } = await supabase
+    .from('media_items')
+    .select('file_path, preview_path')
+    .eq('id', mediaId)
+    .maybeSingle()
+
+  if (mediaError) {
+    throw new Error(`Не удалось получить данные файла для удаления: ${mediaError.message}`)
+  }
+  if (!media) {
+    throw new Error('Файл не найден или у вас нет прав на его удаление.')
+  }
+
+  const paths = [...new Set([media.file_path, media.preview_path].filter(
+    (path): path is string => Boolean(path),
+  ))]
+
+  const { error: storageError } = await supabase.storage
+    .from('media-files')
+    .remove(paths)
+
+  if (storageError) {
+    throw new Error(`Не удалось удалить файл из хранилища: ${storageError.message}`)
+  }
+
+  const { data: deletedMedia, error: deleteError } = await supabase
+    .from('media_items')
+    .delete()
+    .eq('id', mediaId)
+    .select('id')
+    .maybeSingle()
+
+  if (deleteError) {
+    throw new Error(
+      `Файл удалён из хранилища, но запись в базе данных осталась: ${deleteError.message}`,
+    )
+  }
+  if (!deletedMedia) {
+    throw new Error(
+      'Файл удалён из хранилища, но запись в базе данных не удалена. Обновите список и проверьте доступ.',
+    )
+  }
+}
+
 
 export const mediaApi = {
   getMediaItems : getMediaItems,
+  updateMediaTitle,
+  deleteMediaItem,
 
   async getCollections(): Promise<MediaCollection[]> {
     return wait(cloneCollections(mockCollections))

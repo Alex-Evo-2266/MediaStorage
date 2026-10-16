@@ -38,9 +38,25 @@ export function useMediaLibrary() {
 
   const filteredItems = useMemo(() => items, [items])
 
+  const renameItem = async (mediaId: string, title: string) => {
+    await mediaApi.updateMediaTitle(mediaId, title)
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === mediaId ? { ...item, title: title.trim() } : item,
+      ),
+    )
+  }
+
+  const deleteItem = async (mediaId: string) => {
+    await mediaApi.deleteMediaItem(mediaId)
+    setItems((currentItems) => currentItems.filter((item) => item.id !== mediaId))
+  }
+
   return {
     items: filteredItems,
     loading,
     error,
+    renameItem,
+    deleteItem,
   }
 }

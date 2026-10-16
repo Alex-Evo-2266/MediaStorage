@@ -6,6 +6,8 @@ import {
   OpenInFull,
   PlayArrow,
   AudioFile,
+  DeleteOutlined,
+  EditOutlined,
 } from '@mui/icons-material'
 import {
   Backdrop,
@@ -14,6 +16,7 @@ import {
   CardContent,
   IconButton,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { useEffect } from 'react'
@@ -26,6 +29,9 @@ interface SelectedMediaPreviewProps {
   onClose: () => void
   onNext?: () => void
   onPrevious?: () => void
+  onRename: () => void
+  onDelete: () => void
+  actionsDisabled: boolean
 }
 
 export function SelectedMediaPreview({
@@ -34,6 +40,9 @@ export function SelectedMediaPreview({
   onClose,
   onNext,
   onPrevious,
+  onRename,
+  onDelete,
+  actionsDisabled,
 }: SelectedMediaPreviewProps) {
   useEffect(() => {
     if (!open) {
@@ -70,7 +79,7 @@ export function SelectedMediaPreview({
     <Backdrop
       open={open}
       sx={{
-        zIndex: 1400,
+        zIndex: (theme) => theme.zIndex.modal - 1,
         bgcolor: 'rgba(7, 12, 18, 0.74)',
         display: 'flex',
         alignItems: 'center',
@@ -124,14 +133,42 @@ export function SelectedMediaPreview({
               </Typography>
             </Stack>
 
-            <IconButton
-              onClick={onClose}
-              size="small"
-              aria-label="Закрыть просмотр"
-              sx={{ color: '#314255', flexShrink: 0 }}
-            >
-              <Close fontSize="small" />
-            </IconButton>
+            <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+              <Tooltip title="Изменить название">
+                <span>
+                  <IconButton
+                    onClick={onRename}
+                    disabled={actionsDisabled}
+                    size="small"
+                    aria-label="Изменить название файла"
+                    sx={{ color: '#314255' }}
+                  >
+                    <EditOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title="Удалить файл">
+                <span>
+                  <IconButton
+                    onClick={onDelete}
+                    disabled={actionsDisabled}
+                    size="small"
+                    aria-label="Удалить файл"
+                    color="error"
+                  >
+                    <DeleteOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <IconButton
+                onClick={onClose}
+                size="small"
+                aria-label="Закрыть просмотр"
+                sx={{ color: '#314255' }}
+              >
+                <Close fontSize="small" />
+              </IconButton>
+            </Stack>
           </Stack>
 
           {/* Основное содержимое и метаданные */}

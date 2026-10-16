@@ -22,6 +22,9 @@ interface LibraryOverviewPageProps {
   onSelectItem: (item: MediaItem) => void
   collections: MediaCollection[]
   onOpenPreview: () => void
+  onRename: () => void
+  onDelete: () => void
+  actionsDisabled: boolean
   filter?: MediaFilter
   onFilterChange?: (filter: MediaFilter) => void
 }
@@ -33,6 +36,9 @@ export function LibraryOverviewPage({
   onSelectItem,
   collections,
   onOpenPreview,
+  onRename,
+  onDelete,
+  actionsDisabled,
   filter,
   onFilterChange,
 }: LibraryOverviewPageProps) {
@@ -58,7 +64,15 @@ export function LibraryOverviewPage({
       </Box>
 
       <Stack spacing={2.5} sx={{ width: { xs: '100%', xl: 330 }, flexShrink: 0, minHeight: 0 }}>
-        {showPreviewPanel ? <SelectedMediaPanel item={selectedItem} onOpenPreview={onOpenPreview} /> : null}
+        {showPreviewPanel ? (
+          <SelectedMediaPanel
+            item={selectedItem}
+            onOpenPreview={onOpenPreview}
+            onRename={onRename}
+            onDelete={onDelete}
+            actionsDisabled={actionsDisabled}
+          />
+        ) : null}
         <UploadFilesCard />
 
         <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0' }}>
