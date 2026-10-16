@@ -28,24 +28,18 @@ function EmptySelectedMedia() {
         borderRadius: 3,
         bgcolor: '#f7f9fb',
         border: '1px solid #e5eaf0',
-        height: '100%',
       }}
     >
       <CardContent
         sx={{
           p: 2.25,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          minHeight: 280,
         }}
       >
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.75 }}>
           Выбрано
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Ничего не выбрано. Нажмите на файл в медиатеке, чтобы открыть его в
-          этом блоке.
+          Выберите файл в медиатеке, чтобы увидеть подробности.
         </Typography>
       </CardContent>
     </Card>
