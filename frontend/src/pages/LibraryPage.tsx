@@ -8,13 +8,11 @@ import {
   CardMedia,
   Chip,
   Grid,
-  IconButton,
   Stack,
   Typography,
 } from '@mui/material'
 import {
   PlayArrow,
-  OpenInNew,
   SearchOff,
   MusicNote,
 } from '@mui/icons-material'
@@ -706,4 +704,3 @@ export function LibraryPage({
     </Stack>
   )
 }
-

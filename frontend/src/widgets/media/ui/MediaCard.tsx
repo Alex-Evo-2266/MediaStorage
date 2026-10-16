@@ -1,4 +1,4 @@
-import { Card, CardContent, CardMedia, Chip, IconButton, Stack, Typography } from '@mui/material'
+import { Box, Card, CardContent, CardMedia, Chip, IconButton, Stack, Typography } from '@mui/material'
 import { FavoriteBorder, PlayArrow } from '@mui/icons-material'
 import type { MediaItem } from '../../../types/media'
 import { formatFileSize } from '../../../utils/media'
@@ -15,7 +15,11 @@ export function MediaCard({ item, variant = 'image', onSelect }: MediaCardProps)
       sx={{ borderRadius: 3, overflow: 'hidden', bgcolor: '#f7f9fc', border: '1px solid #e5eaf0', cursor: 'pointer' }}
       onClick={() => onSelect?.(item)}
     >
-      <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
+      {item.previewUrl ? (
+        <CardMedia component="img" height="180" image={item.previewUrl} alt={item.title} sx={{ objectFit: 'cover' }} />
+      ) : (
+        <Box sx={{ height: 180, bgcolor: '#e5eaf0' }} />
+      )}
 
       {variant === 'video' ? (
         <Stack

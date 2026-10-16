@@ -1,8 +1,6 @@
 import {
   Avatar,
   Box,
-  Button,
-  Chip,
   Divider,
   List,
   ListItemButton,
@@ -17,7 +15,6 @@ import {
   Image,
   MusicNote,
   PhotoCamera,
-  Settings,
   SmartDisplay,
 } from '@mui/icons-material'
 import type { AppView, StorageSummary } from '../../types/media'

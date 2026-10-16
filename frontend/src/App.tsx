@@ -181,21 +181,6 @@ function AuthenticatedApp({ session }: AuthenticatedAppProps) {
   const { summary: storageSummary } = useStorageSummary()
   const { query: searchValue, setQuery: setSearchValue, filter, setFilter, filteredItems } = useLibraryFilters(mediaItems)
 
-  useEffect(() => {
-    if (selectionResetByDelete) {
-      return
-    }
-
-    if (!mediaItems.length) {
-      setSelectedItemId(null)
-      return
-    }
-
-    if (!selectedItemId || !mediaItems.some((item) => item.id === selectedItemId)) {
-      setSelectedItemId(mediaItems[0].id)
-    }
-  }, [mediaItems, selectedItemId, selectionResetByDelete])
-
   const activeView = useMemo<AppView>(() => {
     switch (location.pathname) {
       case '/':
@@ -243,22 +228,13 @@ function AuthenticatedApp({ session }: AuthenticatedAppProps) {
     return filteredMedia
   }, [activeView, filteredMedia])
 
-  useEffect(() => {
-    if (selectionResetByDelete) {
-      return
-    }
-
-    if (!previewItems.length) {
-      setSelectedItemId(null)
-      return
-    }
-
-    if (!selectedItemId || !previewItems.some((item) => item.id === selectedItemId)) {
-      setSelectedItemId(previewItems[0].id)
-    }
-  }, [previewItems, selectedItemId, selectionResetByDelete])
-
-  const selectedItem = previewItems.find((item) => item.id === selectedItemId) ?? mediaItems.find((item) => item.id === selectedItemId) ?? null
+  const visibleSelectedItemId = selectionResetByDelete
+    ? selectedItemId
+    : previewItems.find((item) => item.id === selectedItemId)?.id ??
+      previewItems[0]?.id ??
+      null
+  const selectedItem =
+    previewItems.find((item) => item.id === visibleSelectedItemId) ?? null
   const selectedIndex = selectedItem ? previewItems.findIndex((item) => item.id === selectedItem.id) : -1
 
   const handleSelectItem = (item: MediaItem) => {
@@ -385,7 +361,7 @@ function AuthenticatedApp({ session }: AuthenticatedAppProps) {
                     <LibraryOverviewPage
                       items={filteredMedia}
                       loading={mediaLoading}
-                      selectedItemId={selectedItemId}
+                      selectedItemId={visibleSelectedItemId}
                       onSelectItem={handleSelectItem}
                       collections={collections}
                       onOpenPreview={() => setIsPreviewOpen(true)}
@@ -405,7 +381,7 @@ function AuthenticatedApp({ session }: AuthenticatedAppProps) {
                       items={filteredMedia.filter((item) => item.type === 'image')}
                       view="image"
                       loading={mediaLoading}
-                      selectedItemId={selectedItemId}
+                      selectedItemId={visibleSelectedItemId}
                       onSelectItem={handleSelectItem}
                       filter={filter}
                       onFilterChange={setFilter}
@@ -419,7 +395,7 @@ function AuthenticatedApp({ session }: AuthenticatedAppProps) {
                       items={filteredMedia.filter((item) => item.type === 'video')}
                       view="video"
                       loading={mediaLoading}
-                      selectedItemId={selectedItemId}
+                      selectedItemId={visibleSelectedItemId}
                       onSelectItem={handleSelectItem}
                       filter={filter}
                       onFilterChange={setFilter}
@@ -433,7 +409,7 @@ function AuthenticatedApp({ session }: AuthenticatedAppProps) {
                       items={filteredMedia.filter((item) => item.type === 'audio')}
                       view="audio"
                       loading={mediaLoading}
-                      selectedItemId={selectedItemId}
+                      selectedItemId={visibleSelectedItemId}
                       onSelectItem={handleSelectItem}
                       filter={filter}
                       onFilterChange={setFilter}

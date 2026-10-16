@@ -23,7 +23,7 @@ interface CollectionsPageProps {
   onCreateCollection: (name: string, description?: string) => Promise<MediaCollection | null>
   onAddMediaToCollection: (collectionId: string, mediaId: string) => Promise<MediaCollection | null>
   onRemoveMediaFromCollection: (collectionId: string, mediaId: string) => Promise<MediaCollection | null>
-  onDeleteCollection: (collectionId: string) => Promise<void>
+  onDeleteCollection: (collectionId: string) => Promise<boolean>
 }
 
 export function CollectionsPage({
@@ -98,7 +98,11 @@ export function CollectionsPage({
 
   const handleDeleteCollection = async (collectionId: string) => {
     setError(null)
-    await onDeleteCollection(collectionId)
+    const deleted = await onDeleteCollection(collectionId)
+
+    if (!deleted) {
+      setError('Не удалось удалить коллекцию. Попробуйте ещё раз.')
+    }
   }
 
   return (
