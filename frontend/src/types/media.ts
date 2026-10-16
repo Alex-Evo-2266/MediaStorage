@@ -6,7 +6,7 @@ export interface MediaItem {
   type: MediaType
   size: number
   createdAt: string
-  previewUrl: string
+  previewUrl: string | null
   duration?: string
   tags: string[]
 }
