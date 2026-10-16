@@ -2,6 +2,7 @@ import {
   AppBar,
   Avatar,
   Box,
+  Button,
   InputAdornment,
   Stack,
   TextField,
@@ -9,14 +10,25 @@ import {
   Typography,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
+import LogoutOutlined from '@mui/icons-material/LogoutOutlined'
 
 interface TopBarProps {
   title: string
   searchValue: string
   onSearchChange: (value: string) => void
+  userEmail: string
+  onSignOut: () => void
+  signingOut: boolean
 }
 
-export function TopBar({ title, searchValue, onSearchChange }: TopBarProps) {
+export function TopBar({
+  title,
+  searchValue,
+  onSearchChange,
+  userEmail,
+  onSignOut,
+  signingOut,
+}: TopBarProps) {
   return (
     <AppBar
       position="static"
@@ -46,7 +58,11 @@ export function TopBar({ title, searchValue, onSearchChange }: TopBarProps) {
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           spacing={1.5}
-          sx={{ alignItems: { xs: 'stretch', sm: 'center' }, ml: 'auto', width: { xs: '100%', sm: 'auto' } }}
+          sx={{
+            alignItems: { xs: 'stretch', sm: 'center' },
+            ml: 'auto',
+            width: { xs: '100%', sm: 'auto' },
+          }}
         >
           <TextField
             size="small"
@@ -65,11 +81,50 @@ export function TopBar({ title, searchValue, onSearchChange }: TopBarProps) {
             }}
           />
 
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', justifyContent: 'flex-end', ml: { xs: 0, sm: 1 } }}>
-            <Typography variant="caption" sx={{ color: '#4c5d74', whiteSpace: 'nowrap' }}>
-              Сортировка: по дате
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+              justifyContent: { xs: 'flex-end', sm: 'flex-start' },
+              minWidth: 0,
+            }}
+          >
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: '#dfe7ff',
+                color: '#1d4ed8',
+                fontSize: 12,
+                flexShrink: 0,
+              }}
+            >
+              {userEmail.trim().charAt(0).toLocaleUpperCase('ru-RU') || 'П'}
+            </Avatar>
+            <Typography
+              variant="body2"
+              title={userEmail}
+              sx={{
+                color: '#4c5d74',
+                maxWidth: { xs: 150, sm: 190, md: 240 },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {userEmail}
             </Typography>
-            <Avatar sx={{ width: 32, height: 32, bgcolor: '#dfe7ff', color: '#1d4ed8', fontSize: 12 }}>А</Avatar>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={onSignOut}
+              disabled={signingOut}
+              startIcon={<LogoutOutlined fontSize="small" />}
+              sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+            >
+              Выйти
+            </Button>
           </Stack>
         </Stack>
       </Toolbar>

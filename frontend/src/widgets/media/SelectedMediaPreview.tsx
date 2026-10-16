@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { MediaItem } from '../../types/media'
 import { formatFileSize } from '../../utils/media'
 
@@ -44,6 +44,9 @@ export function SelectedMediaPreview({
   onDelete,
   actionsDisabled,
 }: SelectedMediaPreviewProps) {
+
+  const [audioError, setAudioError] = useState(false)
+
   useEffect(() => {
     if (!open) {
       return undefined
@@ -241,6 +244,7 @@ export function SelectedMediaPreview({
                 )
               )}
 
+              
               {item.type === 'audio' && (
                 <Stack
                   sx={{
@@ -261,7 +265,7 @@ export function SelectedMediaPreview({
                     {item.title}
                   </Typography>
 
-                  {item.previewUrl ? (
+                  {item.previewUrl && !audioError ? (
                     <Box
                       component="audio"
                       key={item.id}
@@ -269,17 +273,21 @@ export function SelectedMediaPreview({
                       controls
                       preload="metadata"
                       aria-label={item.title}
+                      onError={() => setAudioError(true)}
                       sx={{ width: '100%' }}
                     >
                       Ваш браузер не поддерживает воспроизведение аудио.
                     </Box>
                   ) : (
-                    <Typography variant="body2">
-                      Аудиофайл недоступен
+                    <Typography variant="body2" sx={{ textAlign: 'center' }}>
+                      {audioError
+                        ? 'Не удалось загрузить аудио. Обновите список файлов и попробуйте снова.'
+                        : 'Аудиофайл недоступен'}
                     </Typography>
                   )}
                 </Stack>
               )}
+
             </Box>
 
             <Stack

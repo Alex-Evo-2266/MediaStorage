@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { mediaApi } from '../../entities/media/api/mediaApi'
 import type { MediaItem } from '../../types/media'
 
@@ -6,37 +6,45 @@ export function useMediaLibrary() {
   const [items, setItems] = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const requestIdRef = useRef(0)
+  const isMountedRef = useRef(false)
 
-  useEffect(() => {
-    let isMounted = true
+  const refresh = useCallback(async () => {
+    if (!isMountedRef.current) return
 
-    const load = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const media = await mediaApi.getMediaItems()
-        if (isMounted) {
-          setItems(media)
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Не удалось загрузить медиафайлы')
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
+    const requestId = ++requestIdRef.current
+    setLoading(true)
+    setError(null)
+
+    try {
+      const media = await mediaApi.getMediaItems()
+      if (requestId === requestIdRef.current) {
+        setItems(media)
       }
-    }
-
-    void load()
-
-    return () => {
-      isMounted = false
+    } catch (err) {
+      if (requestId === requestIdRef.current) {
+        setError(err instanceof Error ? err.message : 'Не удалось загрузить медиафайлы')
+      }
+    } finally {
+      if (requestId === requestIdRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
-  const filteredItems = useMemo(() => items, [items])
+  useEffect(() => {
+    let isActive = true
+    isMountedRef.current = true
+    void Promise.resolve().then(() => {
+      if (isActive) return refresh()
+    })
+
+    return () => {
+      isActive = false
+      isMountedRef.current = false
+      requestIdRef.current += 1
+    }
+  }, [refresh])
 
   const renameItem = async (mediaId: string, title: string) => {
     await mediaApi.updateMediaTitle(mediaId, title)
@@ -53,9 +61,10 @@ export function useMediaLibrary() {
   }
 
   return {
-    items: filteredItems,
+    items,
     loading,
     error,
+    refresh,
     renameItem,
     deleteItem,
   }

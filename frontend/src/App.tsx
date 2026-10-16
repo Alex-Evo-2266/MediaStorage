@@ -3,6 +3,7 @@ import {
   Box,
   Alert,
   Button,
+  CircularProgress,
   CssBaseline,
   Dialog,
   DialogActions,
@@ -28,7 +29,9 @@ import { LibraryPage } from './pages/LibraryPage'
 import { UploadPage } from './pages/UploadPage'
 import type { AppView, MediaItem } from './types/media'
 import { SelectedMediaPreview } from './widgets/media/SelectedMediaPreview'
-import { AuthPanel } from './features/auth/AuthPanel';
+import { AuthPanel } from './features/auth/AuthPanel'
+import type { Session } from '@supabase/supabase-js'
+import { supabase } from './shared/api/supabaseClient'
 
 const theme = createTheme({
   palette: {
@@ -74,8 +77,83 @@ const viewToPath: Record<AppView, string> = {
 }
 
 function App() {
+  const [session, setSession] = useState<Session | null>(null)
+  const [sessionLoading, setSessionLoading] = useState(true)
+  const [sessionError, setSessionError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    let authStateChanged = false
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event !== 'INITIAL_SESSION') {
+        authStateChanged = true
+      }
+      if (!isMounted) return
+
+      setSession(newSession)
+      setSessionLoading(false)
+      if (newSession) setSessionError(null)
+    })
+
+    void supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!isMounted || authStateChanged) return
+
+        setSession(data.session)
+        setSessionError(error?.message ?? null)
+        setSessionLoading(false)
+      })
+      .catch((error: unknown) => {
+        if (!isMounted || authStateChanged) return
+
+        setSession(null)
+        setSessionError(
+          error instanceof Error ? error.message : 'Не удалось проверить сессию.',
+        )
+        setSessionLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {sessionLoading ? (
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'grid',
+            placeItems: 'center',
+            bgcolor: '#101418',
+          }}
+        >
+          <CircularProgress aria-label="Проверка авторизации" />
+        </Box>
+      ) : session ? (
+        <AuthenticatedApp key={session.user.id} session={session} />
+      ) : (
+        <AuthPanel sessionError={sessionError} />
+      )}
+    </ThemeProvider>
+  )
+}
+
+interface AuthenticatedAppProps {
+  session: Session
+}
+
+function AuthenticatedApp({ session }: AuthenticatedAppProps) {
   const navigate = useNavigate()
   const location = useLocation()
+  const [signingOut, setSigningOut] = useState(false)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [renameDialogOpen, setRenameDialogOpen] = useState(false)
@@ -88,6 +166,8 @@ function App() {
   const {
     items: mediaItems,
     loading: mediaLoading,
+    error: mediaError,
+    refresh: refreshMedia,
     renameItem,
     deleteItem,
   } = useMediaLibrary()
@@ -235,6 +315,21 @@ function App() {
     navigate(viewToPath[view])
   }
 
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    } catch (error) {
+      setMediaActionMessage({
+        text: error instanceof Error ? error.message : 'Не удалось выйти из аккаунта.',
+        severity: 'error',
+      })
+    } finally {
+      setSigningOut(false)
+    }
+  }
+
   const handlePrevious =
     selectedIndex > 0 ? () => setSelectedItemId(previewItems[selectedIndex - 1].id) : undefined
   const handleNext =
@@ -244,9 +339,6 @@ function App() {
 
   return (
     <>
-    <AuthPanel/>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
       <Box sx={{ minHeight: '100vh', bgcolor: '#edf1f5', color: '#1d2430', p: { xs: 0, md: 1 } }}>
         <Stack direction={{ xs: 'column', lg: 'row' }} sx={{ minHeight: '100vh', width: '100%' }}>
           <SidebarNavigation
@@ -258,9 +350,33 @@ function App() {
           />
 
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
-            <TopBar title={title} searchValue={searchValue} onSearchChange={setSearchValue} />
+            <TopBar
+              title={title}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+              userEmail={session.user.email ?? session.user.phone ?? 'Пользователь'}
+              onSignOut={() => void handleSignOut()}
+              signingOut={signingOut}
+            />
 
             <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+              {mediaError && (
+                <Alert
+                  severity="error"
+                  sx={{ mb: 2 }}
+                  action={
+                    <Button
+                      color="inherit"
+                      size="small"
+                      onClick={() => void refreshMedia()}
+                    >
+                      Повторить
+                    </Button>
+                  }
+                >
+                  {mediaError}
+                </Alert>
+              )}
               <Routes>
                 <Route path="/" element={<Navigate to="/library" replace />} />
                 <Route
@@ -276,6 +392,7 @@ function App() {
                       onRename={handleOpenRename}
                       onDelete={() => setDeleteDialogOpen(true)}
                       actionsDisabled={isMediaMutationPending}
+                      onUploadComplete={refreshMedia}
                       filter={filter}
                       onFilterChange={setFilter}
                     />
@@ -415,7 +532,6 @@ function App() {
           </Alert>
         ) : undefined}
       </Snackbar>
-    </ThemeProvider>
     </>
   )
 }

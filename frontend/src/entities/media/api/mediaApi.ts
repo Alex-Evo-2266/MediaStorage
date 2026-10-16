@@ -20,8 +20,11 @@ const toFrontendMediaItem = (row: SupabaseMediaItemRow): MediaItem => ({
   type: row.type,
   size: row.size,
   createdAt: row.created_at,
-  previewUrl: row.preview_path ?? '',
-  duration: row.duration_seconds === null ? undefined : String(row.duration_seconds),
+  previewUrl: '',
+  duration:
+    row.duration_seconds == null
+      ? undefined
+      : String(row.duration_seconds),
   tags: Array.isArray(row.tags) ? row.tags : [],
 })
 
@@ -37,7 +40,6 @@ export interface CreateCollectionPayload {
   name: string
   description?: string
 }
-
 
 
 export const getMediaItems = async (): Promise<MediaItem[]> => {
@@ -61,17 +63,23 @@ export const getMediaItems = async (): Promise<MediaItem[]> => {
   return Promise.all(
     data.map(async (row) => {
       const item = row as SupabaseMediaItemRow
-      const filePath = item.preview_path || item.file_path
+
+      // Для аудио нужен оригинальный файл.
+      // Для изображений и видео сохраняем прежний выбор превью.
+      const storagePath =
+        item.type === 'audio'
+          ? item.file_path
+          : item.preview_path || item.file_path
+
       let previewUrl = ''
 
-      // Получаем подписанную ссылку для изображений и видео.
       if (
-        filePath &&
-        (item.type === 'image' || item.type === 'video')
+        storagePath &&
+        ['image', 'video', 'audio'].includes(item.type)
       ) {
         const { data: urlData, error: urlError } = await supabase.storage
           .from('media-files')
-          .createSignedUrl(filePath, 3600)
+          .createSignedUrl(storagePath, 3600)
 
         if (urlError) {
           console.error(

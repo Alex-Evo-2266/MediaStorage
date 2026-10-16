@@ -75,7 +75,11 @@ const formatUploadSize = (size: number) => {
   return `${(size / (1024 * 1024)).toFixed(1)} МБ`
 }
 
-export function UploadFilesCard() {
+interface UploadFilesCardProps {
+  onUploadComplete: () => Promise<void>
+}
+
+export function UploadFilesCard({ onUploadComplete }: UploadFilesCardProps) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const isUploadingRef = useRef(false)
 
@@ -228,6 +232,10 @@ export function UploadFilesCard() {
         setInfoMessage(
           `Загрузка завершена. Успешно: ${successCount}, с ошибками: ${failedCount}.`,
         )
+      }
+
+      if (successCount > 0) {
+        await onUploadComplete()
       }
     } finally {
       isUploadingRef.current = false

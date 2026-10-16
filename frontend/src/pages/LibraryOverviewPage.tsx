@@ -25,6 +25,7 @@ interface LibraryOverviewPageProps {
   onRename: () => void
   onDelete: () => void
   actionsDisabled: boolean
+  onUploadComplete: () => Promise<void>
   filter?: MediaFilter
   onFilterChange?: (filter: MediaFilter) => void
 }
@@ -39,6 +40,7 @@ export function LibraryOverviewPage({
   onRename,
   onDelete,
   actionsDisabled,
+  onUploadComplete,
   filter,
   onFilterChange,
 }: LibraryOverviewPageProps) {
@@ -73,7 +75,7 @@ export function LibraryOverviewPage({
             actionsDisabled={actionsDisabled}
           />
         ) : null}
-        <UploadFilesCard />
+        <UploadFilesCard onUploadComplete={onUploadComplete} />
 
         <Card sx={{ borderRadius: 3, bgcolor: '#f7f9fb', border: '1px solid #e5eaf0' }}>
           <CardContent sx={{ p: 2.25 }}>
