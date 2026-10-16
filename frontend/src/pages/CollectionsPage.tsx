@@ -39,7 +39,10 @@ export function CollectionsPage({
   const [error, setError] = useState<string | null>(null)
   const [selectedMediaByCollection, setSelectedMediaByCollection] = useState<Record<string, string>>({})
 
-  const itemsById = useMemo(() => new Map(mediaItems.map((item) => [item.id, item])), [mediaItems])
+  const itemsById = useMemo(
+    () => new Map(mediaItems.map((item) => [item.id, item])),
+    [mediaItems],
+  )
 
   const handleCreateCollection = async () => {
     const trimmedName = name.trim()
@@ -50,11 +53,14 @@ export function CollectionsPage({
     }
 
     setError(null)
-    const created = await onCreateCollection(trimmedName, description)
+
+    const created = await onCreateCollection(trimmedName, description.trim())
 
     if (created) {
       setName('')
       setDescription('')
+    } else {
+      setError('Не удалось создать коллекцию. Попробуйте ещё раз.')
     }
   }
 
@@ -67,8 +73,32 @@ export function CollectionsPage({
     }
 
     setError(null)
-    await onAddMediaToCollection(collectionId, mediaId)
-    setSelectedMediaByCollection((current) => ({ ...current, [collectionId]: '' }))
+
+    const updatedCollection = await onAddMediaToCollection(collectionId, mediaId)
+
+    if (updatedCollection) {
+      setSelectedMediaByCollection((current) => ({
+        ...current,
+        [collectionId]: '',
+      }))
+    } else {
+      setError('Не удалось добавить файл в коллекцию. Попробуйте ещё раз.')
+    }
+  }
+
+  const handleRemoveMedia = async (collectionId: string, mediaId: string) => {
+    setError(null)
+
+    const updatedCollection = await onRemoveMediaFromCollection(collectionId, mediaId)
+
+    if (!updatedCollection) {
+      setError('Не удалось удалить файл из коллекции. Попробуйте ещё раз.')
+    }
+  }
+
+  const handleDeleteCollection = async (collectionId: string) => {
+    setError(null)
+    await onDeleteCollection(collectionId)
   }
 
   return (
@@ -78,9 +108,15 @@ export function CollectionsPage({
           Коллекции
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Создавайте подборки и управляйте ими локально в состоянии приложения.
+          Создавайте подборки, объединяйте медиафайлы и управляйте своими коллекциями.
         </Typography>
       </Box>
+
+      {error && (
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       <Card sx={{ bgcolor: '#f7f9fb', border: '1px solid #e5eaf0', borderRadius: 3 }}>
         <CardContent sx={{ p: 2.5 }}>
@@ -94,6 +130,8 @@ export function CollectionsPage({
               value={name}
               onChange={(event) => setName(event.target.value)}
               fullWidth
+              required
+              slotProps={{ htmlInput:{ maxLength: 100 }}}
             />
 
             <TextField
@@ -103,11 +141,15 @@ export function CollectionsPage({
               fullWidth
               multiline
               minRows={2}
+              slotProps={{ htmlInput:{ maxLength: 500 }}}
             />
 
-            {error && <Alert severity="error">{error}</Alert>}
-
-            <Button variant="contained" startIcon={<Add />} onClick={() => void handleCreateCollection()}>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => void handleCreateCollection()}
+              disabled={!name.trim()}
+            >
               Создать коллекцию
             </Button>
           </Stack>
@@ -116,22 +158,43 @@ export function CollectionsPage({
 
       <Stack spacing={2}>
         {collections.length === 0 ? (
-          <Alert severity="info">Коллекций пока нет. Создайте первую подборку.</Alert>
+          <Alert severity="info">
+            Коллекций пока нет. Создайте первую подборку.
+          </Alert>
         ) : (
           collections.map((collection) => {
             const collectionMedia = collection.mediaIds
               .map((mediaId) => itemsById.get(mediaId))
               .filter((item): item is MediaItem => Boolean(item))
 
-            const availableMedia = mediaItems.filter((item) => !collection.mediaIds.includes(item.id))
+            const availableMedia = mediaItems.filter(
+              (item) => !collection.mediaIds.includes(item.id),
+            )
 
             return (
-              <Card key={collection.id} sx={{ bgcolor: '#f7f9fb', border: '1px solid #e5eaf0', borderRadius: 3 }}>
+              <Card
+                key={collection.id}
+                sx={{
+                  bgcolor: '#f7f9fb',
+                  border: '1px solid #e5eaf0',
+                  borderRadius: 3,
+                }}
+              >
                 <CardContent sx={{ p: 2.5 }}>
                   <Stack spacing={2}>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5 }}>
-                      <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#1d2430' }}>
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      sx={{
+                        justifyContent: 'space-between',
+                        alignItems: { xs: 'flex-start', sm: 'center' },
+                        gap: 1.5,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 700, color: '#1d2430', overflowWrap: 'anywhere' }}
+                        >
                           {collection.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -145,7 +208,7 @@ export function CollectionsPage({
                         startIcon={<DeleteOutlined />}
                         onClick={() => {
                           if (window.confirm(`Удалить коллекцию «${collection.name}»?`)) {
-                            void onDeleteCollection(collection.id)
+                            void handleDeleteCollection(collection.id)
                           }
                         }}
                       >
@@ -153,7 +216,12 @@ export function CollectionsPage({
                       </Button>
                     </Stack>
 
-                    <Chip label={`${collectionMedia.length} файлов`} color="primary" variant="outlined" sx={{ alignSelf: 'flex-start' }} />
+                    <Chip
+                      label={`${collectionMedia.length} файлов`}
+                      color="primary"
+                      variant="outlined"
+                      sx={{ alignSelf: 'flex-start' }}
+                    />
 
                     {collectionMedia.length > 0 ? (
                       <Stack spacing={1.2}>
@@ -170,17 +238,55 @@ export function CollectionsPage({
                               border: '1px solid #e5eaf0',
                               px: 1.5,
                               py: 1,
+                              minWidth: 0,
                             }}
                           >
-                            <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', minWidth: 0, flex: 1 }}>
-                              <Box
-                                component="img"
-                                src={item.previewUrl}
-                                alt={item.title}
-                                sx={{ width: 46, height: 46, objectFit: 'cover', borderRadius: 1.5 }}
-                              />
+                            <Stack
+                              direction="row"
+                              spacing={1.25}
+                              sx={{ alignItems: 'center', minWidth: 0, flex: 1 }}
+                            >
+                              {item.previewUrl ? (
+                                <Box
+                                  component="img"
+                                  src={item.previewUrl}
+                                  alt={item.title}
+                                  sx={{
+                                    width: 46,
+                                    height: 46,
+                                    objectFit: 'cover',
+                                    borderRadius: 1.5,
+                                    flexShrink: 0,
+                                  }}
+                                />
+                              ) : (
+                                <Box
+                                  sx={{
+                                    width: 46,
+                                    height: 46,
+                                    borderRadius: 1.5,
+                                    bgcolor: '#e5eaf0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <LabelImportant color="action" />
+                                </Box>
+                              )}
+
                               <Box sx={{ minWidth: 0 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1d2430', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontWeight: 600,
+                                    color: '#1d2430',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
                                   {item.title}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
@@ -188,10 +294,11 @@ export function CollectionsPage({
                                 </Typography>
                               </Box>
                             </Stack>
+
                             <Button
                               size="small"
                               color="inherit"
-                              onClick={() => void onRemoveMediaFromCollection(collection.id, item.id)}
+                              onClick={() => void handleRemoveMedia(collection.id, item.id)}
                             >
                               Удалить
                             </Button>
@@ -199,20 +306,34 @@ export function CollectionsPage({
                         ))}
                       </Stack>
                     ) : (
-                      <Alert severity="info">В этой коллекции пока нет файлов.</Alert>
+                      <Alert severity="info">
+                        В этой коллекции пока нет файлов.
+                      </Alert>
                     )}
 
                     {availableMedia.length > 0 ? (
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, mt: 1 }}>
-                        <FormControl size="small" sx={{ minWidth: 220, flex: 1 }}>
-                          <InputLabel id={`collection-${collection.id}-label`}>Добавить файл</InputLabel>
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={1.5}
+                        sx={{
+                          alignItems: { xs: 'stretch', sm: 'center' },
+                          mt: 1,
+                        }}
+                      >
+                        <FormControl size="small" sx={{ minWidth: 0, flex: 1 }}>
+                          <InputLabel id={`collection-${collection.id}-label`}>
+                            Добавить файл
+                          </InputLabel>
                           <Select
                             labelId={`collection-${collection.id}-label`}
                             value={selectedMediaByCollection[collection.id] ?? ''}
                             label="Добавить файл"
                             onChange={(event) => {
-                              const mediaId = event.target.value as string
-                              setSelectedMediaByCollection((current) => ({ ...current, [collection.id]: mediaId }))
+                              const mediaId = event.target.value
+                              setSelectedMediaByCollection((current) => ({
+                                ...current,
+                                [collection.id]: mediaId,
+                              }))
                             }}
                           >
                             <MenuItem value="">Выберите файл</MenuItem>
@@ -223,9 +344,11 @@ export function CollectionsPage({
                             ))}
                           </Select>
                         </FormControl>
+
                         <Button
                           variant="contained"
                           startIcon={<LabelImportant />}
+                          disabled={!selectedMediaByCollection[collection.id]}
                           onClick={() => void handleAddMedia(collection.id)}
                         >
                           Добавить в коллекцию

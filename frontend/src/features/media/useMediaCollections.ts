@@ -14,13 +14,19 @@ export function useMediaCollections() {
       try {
         setLoading(true)
         setError(null)
+
         const collections = await mediaApi.getCollections()
+
         if (isMounted) {
           setItems(collections)
         }
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Не удалось загрузить коллекции')
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Не удалось загрузить коллекции',
+          )
         }
       } finally {
         if (isMounted) {
@@ -36,51 +42,125 @@ export function useMediaCollections() {
     }
   }, [])
 
-  const createCollection = useCallback(async (name: string, description = ''): Promise<MediaCollection | null> => {
-    try {
-      const nextCollection = await mediaApi.createCollection({ name, description })
-      setItems((current) => [...current, nextCollection])
-      return nextCollection
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не удалось создать коллекцию')
-      return null
-    }
-  }, [])
+  const createCollection = useCallback(
+    async (
+      name: string,
+      description = '',
+    ): Promise<MediaCollection | null> => {
+      try {
+        setError(null)
 
-  const addMediaToCollection = useCallback(async (collectionId: string, mediaId: string): Promise<MediaCollection | null> => {
-    try {
-      const nextCollection = await mediaApi.addMediaToCollection(collectionId, mediaId)
-      setItems((current) =>
-        current.map((collection) => (collection.id === collectionId ? nextCollection : collection)),
-      )
-      return nextCollection
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не удалось добавить файл в коллекцию')
-      return null
-    }
-  }, [])
+        const nextCollection = await mediaApi.createCollection({
+          name,
+          description,
+        })
 
-  const removeMediaFromCollection = useCallback(async (collectionId: string, mediaId: string): Promise<MediaCollection | null> => {
-    try {
-      const nextCollection = await mediaApi.removeMediaFromCollection(collectionId, mediaId)
-      setItems((current) =>
-        current.map((collection) => (collection.id === collectionId ? nextCollection : collection)),
-      )
-      return nextCollection
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не удалось удалить файл из коллекции')
-      return null
-    }
-  }, [])
+        setItems((current) => [...current, nextCollection])
 
-  const deleteCollection = useCallback(async (collectionId: string): Promise<void> => {
-    try {
-      await mediaApi.deleteCollection(collectionId)
-      setItems((current) => current.filter((collection) => collection.id !== collectionId))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не удалось удалить коллекцию')
-    }
-  }, [])
+        return nextCollection
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Не удалось создать коллекцию',
+        )
+
+        return null
+      }
+    },
+    [],
+  )
+
+  const addMediaToCollection = useCallback(
+    async (
+      collectionId: string,
+      mediaId: string,
+    ): Promise<MediaCollection | null> => {
+      try {
+        setError(null)
+
+        const nextCollection = await mediaApi.addMediaToCollection(
+          collectionId,
+          mediaId,
+        )
+
+        setItems((current) =>
+          current.map((collection) =>
+            collection.id === collectionId
+              ? nextCollection
+              : collection,
+          ),
+        )
+
+        return nextCollection
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Не удалось добавить файл в коллекцию',
+        )
+
+        return null
+      }
+    },
+    [],
+  )
+
+  const removeMediaFromCollection = useCallback(
+    async (
+      collectionId: string,
+      mediaId: string,
+    ): Promise<MediaCollection | null> => {
+      try {
+        setError(null)
+
+        const nextCollection = await mediaApi.removeMediaFromCollection(
+          collectionId,
+          mediaId,
+        )
+
+        setItems((current) =>
+          current.map((collection) =>
+            collection.id === collectionId
+              ? nextCollection
+              : collection,
+          ),
+        )
+
+        return nextCollection
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Не удалось удалить файл из коллекции',
+        )
+
+        return null
+      }
+    },
+    [],
+  )
+
+  const deleteCollection = useCallback(
+    async (collectionId: string): Promise<void> => {
+      try {
+        setError(null)
+
+        await mediaApi.deleteCollection(collectionId)
+
+        setItems((current) =>
+          current.filter((collection) => collection.id !== collectionId),
+        )
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Не удалось удалить коллекцию',
+        )
+      }
+    },
+    [],
+  )
 
   return {
     items,

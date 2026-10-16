@@ -41,14 +41,24 @@ export function SidebarNavigation({
   totalCollections,
   mediaCounts,
 }: SidebarNavigationProps) {
-  const items: Array<{ label: string; count: string; view: AppView; icon: typeof Image }> = [
-    { label: 'Обзор', count: '0', view: 'library', icon: PhotoCamera },
+  const items: Array<{ label: string; count?: string; view: AppView; icon: typeof Image }> = [
+    { label: 'Обзор', view: 'library', icon: PhotoCamera },
     { label: 'Изображения', count: mediaCounts.image.toLocaleString('ru-RU'), view: 'images', icon: Image },
     { label: 'Музыка', count: mediaCounts.audio.toLocaleString('ru-RU'), view: 'audio', icon: MusicNote },
     { label: 'Видео', count: mediaCounts.video.toLocaleString('ru-RU'), view: 'videos', icon: SmartDisplay },
     { label: 'Коллекции', count: totalCollections.toLocaleString('ru-RU'), view: 'collections', icon: Collections },
-    { label: 'Настройки', count: '0', view: 'upload', icon: Settings },
   ]
+
+  const formatStorageSize = (gb: number) => {
+    if (gb < 1) {
+      const mb = gb * 1024
+      return mb < 1
+        ? `${(gb * 1024 ** 2).toFixed(0)} КБ`
+        : `${mb.toFixed(1)} МБ`
+    }
+
+    return `${gb.toFixed(2)} ГБ`
+  }
   return (
     <Stack
       sx={{
@@ -123,7 +133,7 @@ export function SidebarNavigation({
 
       <Divider sx={{ my: 2, borderColor: '#dfe3ea' }} />
 
-      <Typography variant="subtitle2" sx={{ px: 1.2, mb: 1, fontWeight: 700 }}>
+     {/**<Typography variant="subtitle2" sx={{ px: 1.2, mb: 1, fontWeight: 700 }}>
         Теги
       </Typography>
 
@@ -138,10 +148,12 @@ export function SidebarNavigation({
           />
         ))}
       </Stack>
-
+**/}
       <Box sx={{ mt: 2, p: 1.5, borderRadius: 3, bgcolor: '#f5f7fa', border: '1px solid #dde3ea' }}>
         <Typography variant="caption" sx={{ color: '#4a5d75' }}>
-          {storageSummary ? `Использовано ${storageSummary.usedGb} ГБ из ${storageSummary.totalGb} ГБ` : 'Загрузка данных...'}
+          {storageSummary
+          ? `Использовано ${formatStorageSize(storageSummary.usedGb)} из ${formatStorageSize(storageSummary.totalGb)}`
+          : 'Загрузка данных...'}
         </Typography>
         <Box sx={{ mt: 1.5, height: 8, borderRadius: 999, bgcolor: '#dfe6ef', overflow: 'hidden' }}>
           <Box
@@ -153,12 +165,14 @@ export function SidebarNavigation({
             }}
           />
         </Box>
-        <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#4a5d75' }}>
-          {storageSummary ? `Осталось ${storageSummary.freeGb} ГБ` : 'Подсчёт свободного места...'}
+        <Typography
+          variant="caption"
+          sx={{ display: 'block', mt: 1, color: '#4a5d75' }}
+        >
+          {storageSummary
+            ? `Осталось ${formatStorageSize(storageSummary.freeGb)}`
+            : 'Подсчёт свободного места...'}
         </Typography>
-        <Button variant="contained" fullWidth sx={{ mt: 1.5, borderRadius: 2, textTransform: 'none' }}>
-          Увеличить объём
-        </Button>
       </Box>
     </Stack>
   )
